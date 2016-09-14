@@ -1,0 +1,13 @@
+
+.singleMatchDisplay {
+  display: flex;
+  flex-direction: row;
+}
+
+.singleMatchDisplay > .sidePanel {
+  flex: 0 0 auto;
+}
+
+.singleMatchDisplay > .mainPanel {
+  flex: 1 1 auto;
+}
