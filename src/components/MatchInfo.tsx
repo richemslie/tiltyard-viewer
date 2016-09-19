@@ -11,7 +11,6 @@ export interface MatchInfoProps {
 
 export class MatchInfo extends React.Component<MatchInfoProps, {}> {
   render() {
-    // return <h1>Hello from {this.props.compiler} and {this.props.framework}!</h1>;
     return <div>
       <p>Game: {this.props.game.name}</p>
       <p>Start clock: {this.props.startClock}<br/>

@@ -1,7 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import { Hello } from "./components/Hello";
 import { MatchInfo, MatchInfoProps } from "./components/MatchInfo";
 import { SingleMatchDisplay, SingleMatchDisplayProps } from "./components/SingleMatchDisplay";
 
@@ -26,7 +25,6 @@ declare var require: {
 require('!style!css!./index.css');
 
 ReactDOM.render(
-  // <Hello compiler="TypeScript" framework="React" />,
   // <MatchInfo {...props} />,
   <SingleMatchDisplay matchId={matchId} />,
   document.getElementById("example")
