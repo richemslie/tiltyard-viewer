@@ -17,8 +17,10 @@
   },
   "homepage": "https://github.com/AlexLandau/web-experiment#readme",
   "dependencies": {
+    "es6-promise": "^3.3.1",
     "react": "^15.3.1",
-    "react-dom": "^15.3.1"
+    "react-dom": "^15.3.1",
+    "whatwg-fetch": "^1.0.0"
   },
   "devDependencies": {
     "css-loader": "^0.25.0",
