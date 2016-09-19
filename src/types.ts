@@ -1,7 +1,13 @@
 
-
-export interface Game {
-  name: string;
+export interface TiltyardGameRawMetadata {
+  curator?: string,
+  numRoles: number,
+  description?: string,
+  stylesheet?: string,
+  rulesheet: string,
+  gameName: string,
+  roleNames: string[],
+  version: number,
 }
 
 export interface TiltyardMatch {
