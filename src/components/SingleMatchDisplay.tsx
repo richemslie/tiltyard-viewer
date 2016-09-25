@@ -1,9 +1,7 @@
-//  / <reference path="../typings/xslt.d.ts" />
 import * as React from "react";
 import * as _ from "lodash";
 import * as $ from "jquery";
 import "whatwg-fetch";
-// import "xslt";
 import { TiltyardMatch, TiltyardGameRawMetadata } from "../types";
 import { MatchInfo } from "./MatchInfo";
 import { applyXslt } from "../util/xslt";
@@ -20,9 +18,6 @@ export interface SingleMatchDisplayState {
   gameMetadata?: TiltyardGameRawMetadata;
   stylesheet?: string;
 }
-
-declare var $xslt: (xml: string, xsl: string, options: any) => any; 
-// xslt = require("xslt");
 
 function toElement(node: Node): JSX.Element {
   return <span> { node } </span>;  
@@ -46,7 +41,7 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
           .then((response) => { return response.text() })
           .then((body) => {
             let game: TiltyardGameRawMetadata = JSON.parse(body);
-            this.setState((prevState, props) => (_.assign({}, prevState, { game, gameText: body })));
+            this.setState((prevState, props) => (_.assign({}, prevState, { gameMetadata: game, gameText: body })));
 
             //TODO: Clean these parts up, maybe? Or will the browser do the caching for me?
             if (game.stylesheet) {
@@ -67,27 +62,27 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
 
     return <div className="singleMatchDisplay">
       <div className="sidePanel" key="sidePanel">
-        {/* TODO: Make this its own panel? */}
-        { this.state.match ? this.getMatchSidebar(this.state.match) : "Loading match " + this.props.matchId + "..."  }
-        Match info goes here
+        { this.state.match ? this.getMatchSidebar() : "Loading..."  }
       </div>
       <div className="mainPanel" key="mainPanel">
-        { this.state.match ? this.getMatchViz() : "Loading match " + this.props.matchId + "..."  }
-        { this.state.match ? this.getMatchXml() : "" }
-        { this.state.gameText ? "Game text is " + this.state.gameText : "Loading game..." }
-        { this.state.stylesheet
-            ? "Stylesheet is " + this.state.stylesheet
-            : "Loading stylesheet..."
-        }
         <div id="vizPanel">
-          { this.state.stylesheet ?
-            // new JSX.Element()
-            //  toElement(applyXslt($.parseXML("<foo />"), $.parseXML(this.state.stylesheet)))
-            <Visualization visualization={applyXslt($.parseXML(this.getMatchXml()), $.parseXML(this.state.stylesheet))} />
-              : "" }
+          { this.getVizPanel() }
         </div>
       </div>
     </div>;
+  }
+
+  getVizPanel(): JSX.Element {
+    if (!this.state.match) {
+      return <text>{"Loading match " + this.props.matchId + "..."}</text>;
+    } else if (!this.state.gameMetadata) {
+      return <text>Loading game metadata...</text>;
+    } else if (!this.state.stylesheet) {
+      return <text>Loading game stylesheet...</text>;
+    } else {
+      //TODO: Do visualization asynchronously
+      return <Visualization visualization={applyXslt($.parseXML(this.getMatchXml()), $.parseXML(this.state.stylesheet))} />
+    }
   }
 
   getMatchXml(): string {
@@ -98,47 +93,8 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
     stateString = stateString.trim();
     stateString = stateString.slice(1, stateString.length - 1).trim();
 
-    //Convert into facts
-// private static final String renderGdlToXML(Gdl gdl) {
-//         String rval = "";
-//         if(gdl instanceof GdlConstant) {
-//             GdlConstant c = (GdlConstant)gdl;
-//             return c.getValue();
-//         } else if(gdl instanceof GdlFunction) {
-//             GdlFunction f = (GdlFunction)gdl;
-//             if(f.getName().toString().equals("true"))
-//             {
-//                 return "<fact>"+renderGdlToXML(f.get(0))+"</fact>";
-//             }
-//             else
-//             {
-//                 rval += "<relation>"+f.getName()+"</relation>";
-//                 for(int i=0; i<f.arity(); i++)
-//                     rval += "<argument>"+renderGdlToXML(f.get(i))+"</argument>";
-//                 return rval;
-//             }
-//         } else if (gdl instanceof GdlRelation) {
-//             GdlRelation relation = (GdlRelation) gdl;
-//             if(relation.getName().toString().equals("true"))
-//             {
-//                 for(int i=0; i<relation.arity(); i++)
-//                     rval+="<fact>"+renderGdlToXML(relation.get(i))+"</fact>";
-//                 return rval;
-//             } else {
-//                 rval+="<relation>"+relation.getName()+"</relation>";
-//                 for(int i=0; i<relation.arity(); i++)
-//                     rval+="<argument>"+renderGdlToXML(relation.get(i))+"</argument>";
-//                 return rval;
-//             }
-//         } else {
-//             System.err.println("gdlToXML Error: could not handle "+gdl.toString());
-//             return null;
-//         }
-//     }
-
+    //Convert into facts, then XML
     let xml = "<state>" + this.toFacts(stateString) + "</state>";
-
-    //TODO: Convert to xml
     return xml;
   }
 
@@ -177,21 +133,7 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
     return factsXml;
   }
 
-  getMatchSidebar(match: TiltyardMatch): JSX.Element {
-    return <MatchInfo match={match} />
-  }
-
-  getMatchViz(): JSX.Element[] {
-    return [<div key="matchId">
-      The match ID is {this.props.matchId}
-    </div>,
-    <div key="playerNames">
-      The player names are {this.state.match.playerNamesFromHost.join(", ")}
-    </div>,
-    <div key="moves">
-      The moves are: <ol>{this.state.match.moves.map(jointMove => {
-        return <li>{jointMove.join(", ")}</li>
-      })}</ol>
-    </div>];
+  getMatchSidebar(): JSX.Element {
+    return <MatchInfo match={this.state.match} gameMetadata={this.state.gameMetadata} />
   }
 }
