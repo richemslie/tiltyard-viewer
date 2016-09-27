@@ -6,7 +6,6 @@ import { TiltyardMatch, TiltyardGameRawMetadata } from "../types";
 import { MatchInfo } from "./MatchInfo";
 import { applyXslt } from "../util/xslt";
 import { Visualization } from "./Visualization";
-// import xsltFoo = require("xslt");
 
 export interface SingleMatchDisplayProps {
   matchId: string;
@@ -44,6 +43,7 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
             this.setState((prevState, props) => (_.assign({}, prevState, { gameMetadata: game, gameText: body })));
 
             //TODO: Clean these parts up, maybe? Or will the browser do the caching for me?
+            // TODO: In-memory caching, if not already available
             if (game.stylesheet) {
               let stylesheetUrl = match.gameMetaURL + game.stylesheet
               fetch(stylesheetUrl)
