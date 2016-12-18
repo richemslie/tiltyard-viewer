@@ -16,6 +16,13 @@ export interface SingleMatchDisplayState {
   gameText?: string;
   gameMetadata?: TiltyardGameRawMetadata;
   stylesheet?: string;
+  turnNumber?: number;
+  computedVisualizationsByTurn: VizCache;
+  // computedVisualizationsByTurn: Node[];
+}
+
+interface VizCache {
+  [index: number]: Node;
 }
 
 function toElement(node: Node): JSX.Element {
@@ -25,7 +32,7 @@ function toElement(node: Node): JSX.Element {
 export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps, SingleMatchDisplayState> {
   constructor(props: SingleMatchDisplayProps) {
     super(props);
-    this.state = {};
+    this.state = { computedVisualizationsByTurn: [] };
   }
 
   componentDidMount() {
@@ -35,7 +42,12 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
       .then((response) => { return response.text() })
       .then((body) => {
         let match: TiltyardMatch = JSON.parse(body);
-        this.setState((prevState, props) => (_.assign({}, prevState, { match })));
+        this.setState({ match } as any as SingleMatchDisplayState);
+        let turnNumber = -1;
+        if (match.states.length > 0) {
+          turnNumber = match.states.length - 2;
+          this.setState({ turnNumber } as any as SingleMatchDisplayState);
+        }
         fetch(match.gameMetaURL)
           .then((response) => { return response.text() })
           .then((body) => {
@@ -52,10 +64,49 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
                   //TODO: Do something with this
                   let stylesheet: string = body;
                   this.setState((prevState, props) => (_.assign({}, prevState, { stylesheet })));
+                  if (turnNumber >= 0) {
+                    this.startComputingVizForTurn(turnNumber);
+                  }
                 });
             }
           });
     });
+  }
+
+  startComputingVizForTurn(turnNumber: number) {
+    console.info("Triggering computation of viz for turn " + turnNumber);
+    new Promise<Node>((resolve, reject) => {
+      setTimeout(() => {
+        if (this.state.computedVisualizationsByTurn[turnNumber]) {
+          console.info("Skipping computing viz for turn " + turnNumber);
+          // Already computed
+          console.info("Heyo");
+        } else {
+          console.info("Computing viz for turn " + turnNumber);
+          let visualization = applyXslt($.parseXML(this.getMatchXml(turnNumber)), $.parseXML(this.state.stylesheet));
+          console.info("Resolving viz for turn " + turnNumber);
+          resolve(visualization);
+        }
+      });
+    }).then((visualization: Node) => {
+      console.info("Entering 'then'");
+      if (this.state.computedVisualizationsByTurn[turnNumber]) {
+        console.info("Skipping storing viz for turn " + turnNumber);
+        // Already computed
+        return;
+      }
+      console.info("Storing viz for turn " + turnNumber);
+      let cache = this.state.computedVisualizationsByTurn;
+      let updatedCache = _.clone(cache);
+      updatedCache[turnNumber] = visualization;
+      // let updatedCache = _.assign({}, cache, {"turnNumber": visualization});
+      // let updatedCache = cache.slice();//_.assign({}, cache, {turnNumber: visualization});
+      // updatedCache[turnNumber] = visualization;
+      this.setState({ computedVisualizationsByTurn: updatedCache });
+      console.info("Stored viz for turn " + turnNumber);
+      console.info("Updated cache keys: " + _.keys(updatedCache));
+    });
+    console.info("Leaving startComputingVizForTurn");
   }
 
   render() {
@@ -72,22 +123,31 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
     </div>;
   }
 
-  getVizPanel(): JSX.Element {
+  getVizPanel(): React.ReactChild {
     if (!this.state.match) {
-      return <text>{"Loading match " + this.props.matchId + "..."}</text>;
+      return "Loading match " + this.props.matchId + "...";
     } else if (!this.state.gameMetadata) {
-      return <text>Loading game metadata...</text>;
+      return "Loading game metadata...";
     } else if (!this.state.stylesheet) {
-      return <text>Loading game stylesheet...</text>;
+      return "Loading game stylesheet...";
+    } else if (!this.state.computedVisualizationsByTurn[this.getTurnNumber()]) {
+      return "Generating visualization...";
     } else {
-      //TODO: Do visualization asynchronously
-      return <Visualization visualization={applyXslt($.parseXML(this.getMatchXml()), $.parseXML(this.state.stylesheet))} />
+      // applyXslt($.parseXML(this.getMatchXml()), $.parseXML(this.state.stylesheet))
+      let visualization = this.state.computedVisualizationsByTurn[this.getTurnNumber()];
+      console.info("Is viz undefined?: " + (visualization === undefined));
+      return <Visualization visualization={visualization} />
     }
   }
 
-  getMatchXml(): string {
-    let states = this.state.match.states;
-    let stateString = states[states.length - 1];
+  getTurnNumber(): number {
+    return this.state.turnNumber || this.state.match.states.length - 1;
+  }
+
+  getMatchXml(turnNumber: number): string {
+    // let states = this.state.match.states;
+    // let turnNumber = this.state.turnNumber || states.length - 1;
+    let stateString = this.state.match.states[turnNumber];
 
     //Remove outer parentheses
     stateString = stateString.trim();
@@ -134,6 +194,14 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
   }
 
   getMatchSidebar(): JSX.Element {
-    return <MatchInfo match={this.state.match} gameMetadata={this.state.gameMetadata} />
+    return <MatchInfo match={this.state.match} 
+              gameMetadata={this.state.gameMetadata} 
+              turnNumber={this.state.turnNumber}
+              setTurnNumber={(turnNumber: number) => this.setTurnNumber(turnNumber)} />
+  }
+
+  setTurnNumber(turnNumber: number) {
+    this.startComputingVizForTurn(turnNumber);
+    this.setState({ turnNumber } as any as SingleMatchDisplayState);
   }
 }

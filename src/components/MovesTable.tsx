@@ -3,6 +3,8 @@ import * as React from "react";
 export interface MovesTableProps {
   roleNames?: string[];
   movesByTurn: string[][];
+  turnNumber?: number;
+  setTurnNumber: (turnNumber: number) => void;
 }
 
 // Turns '( place 3 1 )' into '(place 3 1)'
@@ -38,8 +40,9 @@ export class MovesTable extends React.Component<MovesTableProps, {}> {
 
   getMoveRows(): JSX.Element[] {
     return this.props.movesByTurn.map((moves, index) => {
-      return <tr key={index}>
-        <td key="moveNum">{index + 1}</td>
+      let arrow = (index === this.props.turnNumber) ? "> " : "";
+      return <tr key={index} onClick={() => {this.props.setTurnNumber(index)}}>
+        <td key="moveNum" className="turn-number">{arrow + (index + 1)}</td>
         { moves.map((move, roleIndex) => {
           return <td key={roleIndex}>{prettifyMove(move)}</td>
         })}

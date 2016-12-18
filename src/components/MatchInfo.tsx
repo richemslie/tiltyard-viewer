@@ -5,6 +5,8 @@ import { MovesTable } from "./MovesTable";
 export interface MatchInfoProps {
   match: TiltyardMatch;
   gameMetadata?: TiltyardGameRawMetadata;
+  turnNumber?: number;
+  setTurnNumber: (turnNumber: number) => void;
 }
 
 export class MatchInfo extends React.Component<MatchInfoProps, {}> {
@@ -15,7 +17,10 @@ export class MatchInfo extends React.Component<MatchInfoProps, {}> {
          Play clock: {this.props.match.playClock}</p>
       <div>Players involved:<br/>
         {this.getPlayersInvolved()}</div>
-      <MovesTable roleNames={this.props.gameMetadata && this.props.gameMetadata.roleNames} movesByTurn={this.props.match.moves} />
+      <MovesTable roleNames={this.props.gameMetadata && this.props.gameMetadata.roleNames}
+         movesByTurn={this.props.match.moves}
+         turnNumber={this.props.turnNumber}
+         setTurnNumber={this.props.setTurnNumber} />
     </div>
   }
 
