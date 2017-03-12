@@ -21,7 +21,7 @@ export interface SingleMatchDisplayState {
   // computedVisualizationsByTurn: Node[];
 }
 
-interface VizCache {
+export interface VizCache {
   [index: number]: Node;
 }
 
