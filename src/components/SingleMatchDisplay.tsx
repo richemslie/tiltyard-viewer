@@ -19,7 +19,6 @@ export interface SingleMatchDisplayState {
   stylesheet?: string;
   turnNumber?: number;
   computedVisualizationsByTurn: VizCache;
-  // computedVisualizationsByTurn: Node[];
 }
 
 export interface VizCache {
@@ -55,19 +54,14 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
             let game: TiltyardGameRawMetadata = JSON.parse(body);
             this.setState((prevState, props) => (_.assign({}, prevState, { gameMetadata: game, gameText: body })));
 
-            //TODO: Clean these parts up, maybe? Or will the browser do the caching for me?
-            // TODO: In-memory caching, if not already available
             if (game.stylesheet) {
               let stylesheetUrl = match.gameMetaURL + game.stylesheet
               fetch(stylesheetUrl)
                 .then((response) => { return response.text() })
                 .then((body) => {
-                  //TODO: Do something with this
                   let stylesheet: string = body;
                   this.setState((prevState, props) => (_.assign({}, prevState, { stylesheet })));
-                  // if (turnNumber >= 0) {
-                    this.startComputingVizForTurn(turnNumber);
-                  // }
+                  this.startComputingVizForTurn(turnNumber);
                 });
             }
           });
@@ -75,9 +69,15 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
 
     // Set up keyboard shortcuts for changing states
     $(document).keypress(e => {
-      if (e.keyCode === 38) {
+      if (e.keyCode === 37) {
+        // Left arrow
+        this.decrementTurnNumber();
+      } else if (e.keyCode === 38) {
         // Up arrow
         this.decrementTurnNumber();
+      } else if (e.keyCode === 39) {
+        // Right arrow
+        this.incrementTurnNumber();
       } else if (e.keyCode === 40) {
         // Down arrow
         this.incrementTurnNumber();
@@ -107,7 +107,6 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
         if (this.state.computedVisualizationsByTurn[turnNumber]) {
           console.info("Skipping computing viz for turn " + turnNumber);
           // Already computed
-          console.info("Heyo");
         } else {
           console.info("Computing viz for turn " + turnNumber);
           const matchXml = $.parseXML(this.getMatchXml(turnNumber));
@@ -131,9 +130,7 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
       let cache = this.state.computedVisualizationsByTurn;
       let updatedCache = _.clone(cache);
       updatedCache[turnNumber] = visualizationHtml;
-      // let updatedCache = _.assign({}, cache, {"turnNumber": visualization});
-      // let updatedCache = cache.slice();//_.assign({}, cache, {turnNumber: visualization});
-      // updatedCache[turnNumber] = visualization;
+
       this.setState({ computedVisualizationsByTurn: updatedCache });
       console.info("Stored viz for turn " + turnNumber);
       console.info("Updated cache keys: " + _.keys(updatedCache));
@@ -180,8 +177,6 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
   }
 
   getMatchXml(turnNumber: number): string {
-    // let states = this.state.match.states;
-    // let turnNumber = this.state.turnNumber || states.length - 1;
     let stateString = this.state.match.states[turnNumber];
 
     //Remove outer parentheses
