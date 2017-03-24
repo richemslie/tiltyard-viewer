@@ -83,7 +83,10 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
           console.info("Heyo");
         } else {
           console.info("Computing viz for turn " + turnNumber);
-          let visualization = applyXslt($.parseXML(this.getMatchXml(turnNumber)), $.parseXML(this.state.stylesheet));
+          const matchXml = $.parseXML(this.getMatchXml(turnNumber));
+          const stylesheetXml = $.parseXML(this.state.stylesheet);
+          const visualization = applyXslt(matchXml, stylesheetXml);
+
           console.info("Resolving viz for turn " + turnNumber);
           resolve(visualization);
         }
@@ -141,7 +144,11 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
   }
 
   getTurnNumber(): number {
-    return this.state.turnNumber || this.state.match.states.length - 1;
+    if (this.state.turnNumber != undefined) {
+      return this.state.turnNumber;
+    }
+    // No turn manually selected: show the most recent turn
+    return this.state.match.states.length - 1;
   }
 
   getMatchXml(turnNumber: number): string {
