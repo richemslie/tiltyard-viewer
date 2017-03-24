@@ -1,3 +1,4 @@
+import * as $ from "jquery";
 import * as React from "react";
 import { TiltyardMatch, TiltyardGameRawMetadata } from "../types";
 import { MovesTable } from "./MovesTable";

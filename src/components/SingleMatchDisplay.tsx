@@ -44,11 +44,11 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
       .then((body) => {
         let match: TiltyardMatch = JSON.parse(body);
         this.setState({ match } as any as SingleMatchDisplayState);
-        let turnNumber = -1;
+        let turnNumber = 0;
         if (match.states.length > 0) {
-          turnNumber = match.states.length - 2;
-          this.setState({ turnNumber } as any as SingleMatchDisplayState);
+          turnNumber = match.states.length - 1;
         }
+        this.setState({ turnNumber } as any as SingleMatchDisplayState);
         fetch(match.gameMetaURL)
           .then((response) => { return response.text() })
           .then((body) => {
@@ -65,13 +65,39 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
                   //TODO: Do something with this
                   let stylesheet: string = body;
                   this.setState((prevState, props) => (_.assign({}, prevState, { stylesheet })));
-                  if (turnNumber >= 0) {
+                  // if (turnNumber >= 0) {
                     this.startComputingVizForTurn(turnNumber);
-                  }
+                  // }
                 });
             }
           });
     });
+
+    // Set up keyboard shortcuts for changing states
+    $(document).keypress(e => {
+      if (e.keyCode === 38) {
+        // Up arrow
+        this.decrementTurnNumber();
+      } else if (e.keyCode === 40) {
+        // Down arrow
+        this.incrementTurnNumber();
+      }
+    });
+  }
+
+  decrementTurnNumber() {
+    if (this.state.turnNumber != undefined
+        && this.state.turnNumber > 0) {
+      this.setTurnNumber(this.state.turnNumber - 1);
+    }
+  }
+
+  incrementTurnNumber() {
+    if (this.state.turnNumber != undefined
+        && this.state.match != undefined
+        && this.state.turnNumber < this.state.match.states.length - 1) {
+      this.setTurnNumber(this.state.turnNumber + 1);
+    }
   }
 
   startComputingVizForTurn(turnNumber: number) {
@@ -150,7 +176,7 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
       return this.state.turnNumber;
     }
     // No turn manually selected: show the most recent turn
-    return this.state.match.states.length - 1;
+    return this.state.match.states.length;
   }
 
   getMatchXml(turnNumber: number): string {

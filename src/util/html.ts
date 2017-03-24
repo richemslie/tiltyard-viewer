@@ -1,4 +1,4 @@
-
+// Note: This modifies the input.
 export function getHtmlDestructively(node: Node): string {
   var tmp: HTMLDivElement = document.createElement("div");
   tmp.appendChild(node);
