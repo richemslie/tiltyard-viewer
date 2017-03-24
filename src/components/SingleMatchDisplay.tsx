@@ -7,9 +7,6 @@ import { applyXslt } from "../util/xslt";
 import { TiltyardGameRawMetadata, TiltyardMatch } from "../types";
 import { RawHtmlVisualization } from "./RawHtmlVisualization";
 import { MatchInfo } from "./MatchInfo";
-import { Visualization } from "./Visualization";
-
-
 
 export interface SingleMatchDisplayProps {
   matchId: string;
