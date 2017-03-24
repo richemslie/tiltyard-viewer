@@ -1,11 +1,15 @@
-import * as React from "react";
-import * as _ from "lodash";
 import * as $ from "jquery";
+import * as _ from "lodash";
+import * as React from "react";
 import "whatwg-fetch";
-import { TiltyardMatch, TiltyardGameRawMetadata } from "../types";
-import { MatchInfo } from "./MatchInfo";
+import { getHtmlDestructively } from "../util/html";
 import { applyXslt } from "../util/xslt";
+import { TiltyardGameRawMetadata, TiltyardMatch } from "../types";
+import { RawHtmlVisualization } from "./RawHtmlVisualization";
+import { MatchInfo } from "./MatchInfo";
 import { Visualization } from "./Visualization";
+
+
 
 export interface SingleMatchDisplayProps {
   matchId: string;
@@ -22,7 +26,7 @@ export interface SingleMatchDisplayState {
 }
 
 export interface VizCache {
-  [index: number]: Node;
+  [index: number]: string;
 }
 
 function toElement(node: Node): JSX.Element {
@@ -75,7 +79,7 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
 
   startComputingVizForTurn(turnNumber: number) {
     console.info("Triggering computation of viz for turn " + turnNumber);
-    new Promise<Node>((resolve, reject) => {
+    new Promise<string>((resolve, reject) => {
       setTimeout(() => {
         if (this.state.computedVisualizationsByTurn[turnNumber]) {
           console.info("Skipping computing viz for turn " + turnNumber);
@@ -85,13 +89,15 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
           console.info("Computing viz for turn " + turnNumber);
           const matchXml = $.parseXML(this.getMatchXml(turnNumber));
           const stylesheetXml = $.parseXML(this.state.stylesheet);
-          const visualization = applyXslt(matchXml, stylesheetXml);
+          const visualizationNode = applyXslt(matchXml, stylesheetXml);
+
+          const visualizationHtml = getHtmlDestructively(visualizationNode);
 
           console.info("Resolving viz for turn " + turnNumber);
-          resolve(visualization);
+          resolve(visualizationHtml);
         }
       });
-    }).then((visualization: Node) => {
+    }).then((visualizationHtml: string) => {
       console.info("Entering 'then'");
       if (this.state.computedVisualizationsByTurn[turnNumber]) {
         console.info("Skipping storing viz for turn " + turnNumber);
@@ -101,7 +107,7 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
       console.info("Storing viz for turn " + turnNumber);
       let cache = this.state.computedVisualizationsByTurn;
       let updatedCache = _.clone(cache);
-      updatedCache[turnNumber] = visualization;
+      updatedCache[turnNumber] = visualizationHtml;
       // let updatedCache = _.assign({}, cache, {"turnNumber": visualization});
       // let updatedCache = cache.slice();//_.assign({}, cache, {turnNumber: visualization});
       // updatedCache[turnNumber] = visualization;
@@ -136,10 +142,9 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
     } else if (!this.state.computedVisualizationsByTurn[this.getTurnNumber()]) {
       return "Generating visualization...";
     } else {
-      // applyXslt($.parseXML(this.getMatchXml()), $.parseXML(this.state.stylesheet))
       let visualization = this.state.computedVisualizationsByTurn[this.getTurnNumber()];
       console.info("Is viz undefined?: " + (visualization === undefined));
-      return <Visualization visualization={visualization} />
+      return <RawHtmlVisualization html={visualization} />
     }
   }
 

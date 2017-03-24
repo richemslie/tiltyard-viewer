@@ -12,7 +12,7 @@ export class Visualization extends React.Component<VisualizationProps, {}> {
 
   getContents() {
     var tmp: HTMLDivElement = document.createElement("div");
-    tmp.appendChild(this.props.visualization);
+    tmp.appendChild(this.props.visualization.cloneNode(true));
     let vizHtml = tmp.innerHTML;
     tmp.remove();
 
