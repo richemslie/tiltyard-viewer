@@ -5,7 +5,7 @@ Built with TypeScript and React.
 
 TODOs:
 - Less ugly list of matches
-  - Visual indicator of completion
+  - Visual indicator of completion/abandonment
 - Limit visual length of moves list
 - Adjust match visualization to available screen space (?)
 - If match is ongoing, get updates live

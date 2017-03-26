@@ -6,7 +6,8 @@
   "scripts": {
     "build": "npm run clean && tsc -d && webpack",
     "clean": "rm -rf dist/",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "tslint --project tsconfig.json",
+    "test": "npm run build && npm run lint"
   },
   "repository": {
     "type": "git",
@@ -33,6 +34,7 @@
     "source-map-loader": "^0.1.5",
     "style-loader": "^0.13.1",
     "ts-loader": "^0.8.2",
+    "tslint": "^4.5.1",
     "typescript": "~2.2.0",
     "webpack": "^1.13.2"
   }
