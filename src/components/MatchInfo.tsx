@@ -1,4 +1,3 @@
-import * as $ from "jquery";
 import * as React from "react";
 import { TiltyardMatch, TiltyardGameRawMetadata } from "../types";
 import { MovesTable } from "./MovesTable";
@@ -47,14 +46,23 @@ export class MatchInfo extends React.Component<MatchInfoProps, {}> {
   }
 
   getPlayersInvolved(): JSX.Element[] {
-    if (this.props.gameMetadata && this.props.gameMetadata.roleNames) {
-      return this.props.match.playerNamesFromHost.map((playerName, index) => {
-        return <div key={index}>{playerName} as {this.props.gameMetadata.roleNames[index]}</div>;
-      });
-    } else {
-      return this.props.match.playerNamesFromHost.map((playerName, index) => {
-        return <div key={index}>{playerName} as player {index + 1}</div>;
-      });
-    }
+    return this.props.match.playerNamesFromHost.map((playerName, index) => {
+      return <div key={index}>{playerName} as {getRoleIdentifier(this.props.gameMetadata, index)}
+        {getGoalInfo(this.props.match, index)}</div>;
+    });
   }
+}
+
+function getRoleIdentifier(gameMetadata: TiltyardGameRawMetadata, playerIndex: number): React.ReactChild {
+  if (gameMetadata != undefined && gameMetadata.roleNames != undefined) {
+    return gameMetadata.roleNames[playerIndex];
+  }
+  return "player " + (playerIndex + 1);
+}
+
+function getGoalInfo(match: TiltyardMatch, playerIndex: number): React.ReactChild {
+  if (match != undefined && match.goalValues != undefined) {
+    return " (" + match.goalValues[playerIndex] + ")";
+  }
+  return "";
 }

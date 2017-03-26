@@ -9,4 +9,6 @@
 
 .vertical-match-selecting-display > .match-selector-column {
   flex: 0 0 15em;
+  background-color: aliceblue;
+  padding: 1em;
 }

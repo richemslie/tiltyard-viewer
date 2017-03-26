@@ -1,3 +1,15 @@
 .player-in-match-summary {
   padding-left: 2em;
+  font-size: 95%;
+}
+
+.game-name-in-match-summary {
+  font-size: 105%;
+}
+
+.vertical-match-summary {
+  margin-top: 8px;
+}
+.vertical-match-summary > a {
+  cursor: pointer;
 }

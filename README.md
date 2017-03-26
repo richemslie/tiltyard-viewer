@@ -5,8 +5,6 @@ Built with TypeScript and React.
 
 TODOs:
 - Less ugly list of matches
-  - Visual separation
-  - Real names of games via http://games.ggp.org/base/games/metadata
   - Visual indicator of completion
 - Limit visual length of moves list
 - Adjust match visualization to available screen space (?)
@@ -16,3 +14,4 @@ TODOs:
   - UI for choosing these
   - When filtered by player, follow new matches as they start
 - Ability to load more matches
+- Deconflict global and local loads of game metadata

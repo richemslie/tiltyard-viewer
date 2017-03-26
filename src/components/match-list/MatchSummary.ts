@@ -1,5 +1,6 @@
 export interface MatchSummary {
-  matchURL: string;
-  gameName: string;
+  matchUrl: string;
+  gameMetaUrl: string;
   playerNames: string[];
+  goalValues?: number[];
 }
