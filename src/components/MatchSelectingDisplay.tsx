@@ -1,11 +1,9 @@
 import * as React from "react";
+import { MatchSummary } from "./match-list/MatchSummary";
+import { VerticalMatchList } from "./match-list/VerticalMatchList";
 import { TiltyardAllGamesMetadata } from "./MatchSelectingDisplay";
 import { TiltyardMatchSummary } from "./MatchSelectingDisplay";
 import { SingleMatchDisplay } from "./SingleMatchDisplay";
-import { MatchSummary } from "./match-list/MatchSummary";
-import { VerticalMatchList } from "./match-list/VerticalMatchList";
-
-
 
 export interface MatchSelectingDisplayProps {
 }
@@ -23,11 +21,38 @@ export class MatchSelectingDisplay extends React.Component<MatchSelectingDisplay
     this.state = {};
   }
 
-  render(): JSX.Element {
+  public render(): JSX.Element {
     return this.renderWithVerticalMatchList();
   }
 
-  renderWithVerticalMatchList(): JSX.Element {
+  public componentDidMount(): void {
+    // The hash is the identifier for Tiltyard specifically
+    const matchListUrl = "http://database.ggp.org/query/filter,recent,90bd08a7df7b8113a45f1e537c1853c3974006b2";
+    fetch(matchListUrl)
+      .then((response) => { return response.text(); })
+      .then((body) => {
+        const rawMatchesList: RawMatchesList = JSON.parse(body);
+        const summaries: MatchSummary[] = rawMatchesList.queryMatches.map(toMatchSummary);
+
+        this.setState({
+          availableMatchSummaries: summaries,
+          curMatchUrl: summaries.length > 0 ? summaries[0].matchUrl : undefined,
+        });
+      });
+
+    const gameMetadataUrl = "http://games.ggp.org/base/games/metadata";
+    fetch(gameMetadataUrl)
+      .then((response) => { return response.text(); })
+      .then((body) => {
+        const gamesMetadata: TiltyardAllGamesMetadata = JSON.parse(body);
+
+        this.setState({
+          allGamesMetadata: gamesMetadata,
+        });
+      });
+  }
+
+  private renderWithVerticalMatchList(): JSX.Element {
     return <div className="vertical-match-selecting-display">
         <div className="match-display-column">
           {this.state.curMatchUrl
@@ -47,33 +72,6 @@ export class MatchSelectingDisplay extends React.Component<MatchSelectingDisplay
              />
         </div>
       </div>;
-  }
-
-  componentDidMount(): void {
-    // The hash is the identifier for Tiltyard specifically
-    const matchListUrl = "http://database.ggp.org/query/filter,recent,90bd08a7df7b8113a45f1e537c1853c3974006b2";
-    fetch(matchListUrl)
-      .then((response) => { return response.text() })
-      .then((body) => {
-        const rawMatchesList: RawMatchesList = JSON.parse(body);
-        const summaries: MatchSummary[] = rawMatchesList.queryMatches.map(toMatchSummary);
-
-        this.setState({
-          curMatchUrl: summaries.length > 0 ? summaries[0].matchUrl : undefined,
-          availableMatchSummaries: summaries,
-        });
-      });
-
-    const gameMetadataUrl = "http://games.ggp.org/base/games/metadata";
-    fetch(gameMetadataUrl)
-      .then((response) => { return response.text() })
-      .then((body) => {
-        const gamesMetadata: TiltyardAllGamesMetadata = JSON.parse(body);
-
-        this.setState({
-          allGamesMetadata: gamesMetadata
-        });
-      });
   }
 }
 
@@ -117,15 +115,15 @@ function gameNameFromMetadataGetter(allGamesMetadata: TiltyardAllGamesMetadata):
     } else {
       return gameKey;
     }
-  }
+  };
 }
 
 function toMatchSummary(rawMatch: TiltyardMatchSummary): MatchSummary {
   return {
-    matchUrl: rawMatch.matchURL,
     gameMetaUrl: rawMatch.gameMetaURL,
-    playerNames: rawMatch.playerNamesFromHost,
     goalValues: rawMatch.goalValues,
+    matchUrl: rawMatch.matchURL,
+    playerNames: rawMatch.playerNamesFromHost,
   };
 }
 

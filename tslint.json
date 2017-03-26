@@ -1,3 +1,12 @@
 {
-    "extends": "tslint:recommended"
+    "extends": "tslint:recommended",
+    "rules": {
+        "interface-name": [
+            false
+        ],
+        "triple-equals": [
+            true,
+            "allow-undefined-check"
+        ]
+    }
 }

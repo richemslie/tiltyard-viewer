@@ -5,20 +5,20 @@ import { MatchSummary } from "./MatchSummary";
 export interface VerticalMatchListProps {
   matchSummaries: MatchSummary[];
   onSelectMatch: (matchUrl: string) => void;
-  getGameName: (summary: MatchSummary) => string
+  getGameName: (summary: MatchSummary) => string;
 }
 
 export class VerticalMatchList extends React.Component<VerticalMatchListProps, {}> {
-  render(): JSX.Element {
+  public render(): JSX.Element {
     return <div> { "Matches: "}
-      { this.props.matchSummaries.map(matchSummary =>
+      { this.props.matchSummaries.map((matchSummary) =>
         <div className="vertical-match-summary"><a onClick={() => this.props.onSelectMatch(matchSummary.matchUrl)}>
           <div className="game-name-in-match-summary">{this.props.getGameName(matchSummary)}:</div>
           {matchSummary.playerNames.map((name, index) =>
             <div className="player-in-match-summary">
               {name + getGoalInfo(matchSummary, index)}
             </div>)}
-        </a></div>
+        </a></div>,
       )}
     </div>;
   }

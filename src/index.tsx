@@ -1,9 +1,8 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { MatchSelectingDisplay } from "./components/MatchSelectingDisplay";
 import { MatchInfo, MatchInfoProps } from "./components/MatchInfo";
+import { MatchSelectingDisplay } from "./components/MatchSelectingDisplay";
 import { SingleMatchDisplay, SingleMatchDisplayProps } from "./components/SingleMatchDisplay";
-
 
 // Hex
 let matchId = "http://matches.ggp.org/matches/99b8572c92c9b236867f8bb8d94bb3bf9645bf51/";
@@ -25,10 +24,11 @@ declare var require: {
   ensure: (paths: string[], callback: (require: <T>(path: string) => T) => void) => void;
 };
 
-require('!style!css!./index.css');
+// This tells Webpack to magically add our CSS here.
+require("!style!css!./index.css"); // tslint:disable-line
 
 ReactDOM.render(
   // <SingleMatchDisplay matchUrl={matchId} />,
   <MatchSelectingDisplay />,
-  document.getElementById("example")
+  document.getElementById("example"),
 );

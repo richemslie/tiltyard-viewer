@@ -15,19 +15,19 @@ function prettifyMove(move: string): string {
 }
 
 export class MovesTable extends React.Component<MovesTableProps, {}> {
-  render() {
+  public render() {
     return <table>
       <thead>{ this.getRoleNameHeader() }</thead>
       <tbody>{ this.getPreMovesRow() }{ this.getMoveRows() }</tbody>
-    </table>
+    </table>;
   }
 
-  getRoleNameHeader(): JSX.Element {
+  private getRoleNameHeader(): JSX.Element {
     if (this.props.roleNames) {
       return <tr>
         <th>Turn</th>
-        { this.props.roleNames.map(roleName => {
-          return <th>{roleName}</th>
+        { this.props.roleNames.map((roleName) => {
+          return <th>{roleName}</th>;
         }) }
       </tr>;
     } else if (this.props.movesByTurn.length > 0) {
@@ -38,32 +38,31 @@ export class MovesTable extends React.Component<MovesTableProps, {}> {
     }
   }
 
-  getPreMovesRow(): JSX.Element {
+  private getPreMovesRow(): JSX.Element {
     let arrow = (0 === this.props.turnNumber) ? "> " : "";
-    return <tr key={"premoves"} onClick={() => {this.props.setTurnNumber(0)}}>
+    return <tr key={"premoves"} onClick={() => { this.props.setTurnNumber(0); }}>
         <td key="moveNum" className="turn-number">{arrow + 0}</td>
         {
           this.getPreMovesCells(this.props.roleNames ? this.props.roleNames.length :
            (this.props.movesByTurn.length > 0 ? this.props.movesByTurn[0].length : 1))
-          //return <td key={roleIndex}>{prettifyMove(move)}</td>
         }
-      </tr>
+      </tr>;
   }
 
-  getPreMovesCells(count: number): JSX.Element[] {
+  private getPreMovesCells(count: number): JSX.Element[] {
     return new Array(count).fill(<td>&mdash;</td>);
   }
 
-  getMoveRows(): JSX.Element[] {
+  private getMoveRows(): JSX.Element[] {
     return this.props.movesByTurn.map((moves, index) => {
       let turnNumber = index + 1;
       let arrow = (turnNumber === this.props.turnNumber) ? "> " : "";
-      return <tr key={turnNumber} onClick={() => {this.props.setTurnNumber(turnNumber)}}>
+      return <tr key={turnNumber} onClick={() => { this.props.setTurnNumber(turnNumber); }}>
         <td key="moveNum" className="turn-number">{arrow + turnNumber}</td>
         { moves.map((move, roleIndex) => {
-          return <td key={roleIndex}>{prettifyMove(move)}</td>
+          return <td key={roleIndex}>{prettifyMove(move)}</td>;
         })}
-      </tr>
+      </tr>;
     });
   }
 }

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { TiltyardMatch, TiltyardGameRawMetadata } from "../types";
+import { TiltyardGameRawMetadata, TiltyardMatch } from "../types";
 import { MovesTable } from "./MovesTable";
 
 export interface MatchInfoProps {
@@ -10,7 +10,7 @@ export interface MatchInfoProps {
 }
 
 export class MatchInfo extends React.Component<MatchInfoProps, {}> {
-  render() {
+ public render() {
     return <div>
       <p>Game: { this.getGameName() }</p>
       <p>Start clock: {this.props.match.startClock}<br/>
@@ -21,10 +21,10 @@ export class MatchInfo extends React.Component<MatchInfoProps, {}> {
          movesByTurn={this.props.match.moves}
          turnNumber={this.props.turnNumber}
          setTurnNumber={this.props.setTurnNumber} />
-    </div>
+    </div>;
   }
 
-  getGameName() {
+  private getGameName() {
     const metaUrl = this.props.match.gameMetaURL;
     if (this.props.gameMetadata) {
       const searchTerm = "//games.ggp.org/";
@@ -38,14 +38,14 @@ export class MatchInfo extends React.Component<MatchInfoProps, {}> {
           + "//www.ggp.org/view/all/games/"
           + repoName
           + metaUrl.slice(slashAfterGamesIndex);
-        return <a href={humanUrl}>{this.props.gameMetadata.gameName}</a>
+        return <a href={humanUrl}>{this.props.gameMetadata.gameName}</a>;
       }
-      return <text>{this.props.gameMetadata.gameName}</text>
+      return <text>{this.props.gameMetadata.gameName}</text>;
     }
     return <text>{metaUrl}</text>;
   }
 
-  getPlayersInvolved(): JSX.Element[] {
+  private getPlayersInvolved(): JSX.Element[] {
     return this.props.match.playerNamesFromHost.map((playerName, index) => {
       return <div key={index}>{playerName} as {getRoleIdentifier(this.props.gameMetadata, index)}
         {getGoalInfo(this.props.match, index)}</div>;

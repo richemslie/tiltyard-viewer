@@ -5,13 +5,13 @@ export interface RawHtmlVisualizationProps {
 }
 
 export class RawHtmlVisualization extends React.Component<RawHtmlVisualizationProps, {}> {
-  render(): JSX.Element {
+  public render(): JSX.Element {
     return <div dangerouslySetInnerHTML={this.getContents()} />;
   }
 
-  getContents() {
+  private getContents() {
     return {
-      __html: this.props.html
-    }
+      __html: this.props.html,
+    };
   }
 }
