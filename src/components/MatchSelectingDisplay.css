@@ -1,0 +1,12 @@
+.vertical-match-selecting-display {
+  display: flex;
+  flex-direction: row;
+}
+
+.vertical-match-selecting-display > .match-display-column {
+  flex: 1 1 auto;
+}
+
+.vertical-match-selecting-display > .match-selector-column {
+  flex: 0 0 15em;
+}
