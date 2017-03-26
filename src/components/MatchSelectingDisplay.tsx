@@ -2,7 +2,6 @@ import * as React from "react";
 import { VerticalMatchList } from "./match-list/VerticalMatchList";
 import { TiltyardMatchSummary } from "./MatchSelectingDisplay";
 import { SingleMatchDisplay } from "./SingleMatchDisplay";
-import { HorizonalMatchList } from "./match-list/HorizontalMatchList";
 import { MatchSummary } from "./match-list/MatchSummary";
 
 
@@ -39,20 +38,6 @@ export class MatchSelectingDisplay extends React.Component<MatchSelectingDisplay
               this.setState({curMatchUrl: matchId});
             }} />
         </div>
-      </div>;
-  }
-
-  renderWithHorizontalMatchList(): JSX.Element {
-    // TODO: Style these so they have consistent space
-    return <div>
-        <HorizonalMatchList
-          matchSummaries={this.state.availableMatchSummaries || []}
-          onSelectMatch={(matchId: string) => {
-            this.setState({curMatchUrl: matchId});
-          }} />
-        {this.state.curMatchUrl
-         ? <SingleMatchDisplay matchUrl={this.state.curMatchUrl} />
-         : "No match selected."}
       </div>;
   }
 
