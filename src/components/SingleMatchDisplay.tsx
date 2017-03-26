@@ -9,7 +9,7 @@ import { RawHtmlVisualization } from "./RawHtmlVisualization";
 import { MatchInfo } from "./MatchInfo";
 
 export interface SingleMatchDisplayProps {
-  matchId: string;
+  matchUrl: string;
 }
 
 export interface SingleMatchDisplayState {
@@ -35,9 +35,45 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
     this.state = { computedVisualizationsByTurn: [] };
   }
 
+  componentWillReceiveProps(nextProps: Readonly<SingleMatchDisplayProps>, nextContext: any): void {
+    if (this.props.matchUrl !== nextProps.matchUrl) {
+      setTimeout(() => {
+        this.setState({
+          match: undefined,
+          gameText: undefined,
+          gameMetadata: undefined,
+          stylesheet: undefined,
+          turnNumber: undefined,
+          computedVisualizationsByTurn: []
+        });
+        this.loadMatch();
+      });
+    }
+  }
+
   componentDidMount() {
-    let matchId = this.props.matchId;
-    let matchJsonUrl =  "http://matches.ggp.org/matches/"+matchId+"/";
+    this.loadMatch();
+
+    // Set up keyboard shortcuts for changing states
+    $(document).keypress(e => {
+      if (e.keyCode === 37) {
+        // Left arrow
+        this.decrementTurnNumber();
+      } else if (e.keyCode === 38) {
+        // Up arrow
+        this.decrementTurnNumber();
+      } else if (e.keyCode === 39) {
+        // Right arrow
+        this.incrementTurnNumber();
+      } else if (e.keyCode === 40) {
+        // Down arrow
+        this.incrementTurnNumber();
+      }
+    });
+  }
+
+  loadMatch() {
+    let matchJsonUrl = this.props.matchUrl;
     fetch(matchJsonUrl)
       .then((response) => { return response.text() })
       .then((body) => {
@@ -65,23 +101,6 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
                 });
             }
           });
-    });
-
-    // Set up keyboard shortcuts for changing states
-    $(document).keypress(e => {
-      if (e.keyCode === 37) {
-        // Left arrow
-        this.decrementTurnNumber();
-      } else if (e.keyCode === 38) {
-        // Up arrow
-        this.decrementTurnNumber();
-      } else if (e.keyCode === 39) {
-        // Right arrow
-        this.incrementTurnNumber();
-      } else if (e.keyCode === 40) {
-        // Down arrow
-        this.incrementTurnNumber();
-      }
     });
   }
 
@@ -154,7 +173,7 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
 
   getVizPanel(): React.ReactChild {
     if (!this.state.match) {
-      return "Loading match " + this.props.matchId + "...";
+      return "Loading match " + this.props.matchUrl + "...";
     } else if (!this.state.gameMetadata) {
       return "Loading game metadata...";
     } else if (!this.state.stylesheet) {
