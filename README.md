@@ -7,8 +7,8 @@ TODOs:
 - Less ugly list of matches
   - Visual indicator of completion/abandonment
 - Limit visual length of moves list
+- Scroll matches list independently of rest of viewer
 - Adjust match visualization to available screen space (?)
-- If match is ongoing, get updates live
 - Get updates to match list live
 - Filter down matches by player(s), game(s), or tournament
   - UI for choosing these
