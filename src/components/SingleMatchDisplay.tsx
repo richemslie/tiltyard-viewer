@@ -30,6 +30,8 @@ function toElement(node: Node): JSX.Element {
 }
 
 export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps, SingleMatchDisplayState> {
+  private reloadMatchRef: number;
+
   constructor(props: SingleMatchDisplayProps) {
     super(props);
     this.state = { computedVisualizationsByTurn: [] };
@@ -59,13 +61,13 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
           stylesheet: undefined,
           turnNumber: undefined,
         });
-        this.loadMatch();
+        this.loadGameAndMatch();
       });
     }
   }
 
   public componentDidMount() {
-    this.loadMatch();
+    this.loadGameAndMatch();
 
     // Set up keyboard shortcuts for changing states
     $(document).keypress((e) => {
@@ -83,20 +85,26 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
         this.incrementTurnNumber();
       }
     });
+
+    // Start the regular match reloader
+    this.reloadMatchRef = setInterval(() => this.reloadMatchOnly(), 10000);
   }
 
-  private loadMatch() {
+  public componentWillUnmount() {
+    clearInterval(this.reloadMatchRef);
+  }
+
+  private loadGameAndMatch() {
     let matchJsonUrl = this.props.matchUrl;
     fetch(matchJsonUrl)
       .then((response) => { return response.text(); })
       .then((body) => {
         let match: TiltyardMatch = JSON.parse(body);
-        this.setState({ match } as any as SingleMatchDisplayState);
         let turnNumber = 0;
         if (match.states.length > 0) {
           turnNumber = match.states.length - 1;
         }
-        this.setState({ turnNumber } as any as SingleMatchDisplayState);
+        this.setState({ match, turnNumber });
         fetch(match.gameMetaURL)
           .then((response) => { return response.text(); })
           .then((gameMetadataText) => {
@@ -116,6 +124,32 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
     });
   }
 
+  private reloadMatchOnly() {
+    if (this.state.match && (this.state.match.isCompleted || this.state.match.isAborted)) {
+      // This match is over, don't reload it
+      return;
+    }
+
+    let matchJsonUrl = this.props.matchUrl;
+    fetch(matchJsonUrl)
+      .then((response) => { return response.text(); })
+      .then((body) => {
+        let match: TiltyardMatch = JSON.parse(body);
+
+        // Update the turn number if we're currently looking at the last turn
+        const onLastTurn = (this.state.turnNumber === this.state.match.moves.length);
+        if (onLastTurn) {
+          let turnNumber = match.states.length - 1;
+          // TODO: It would be nice if we could somehow hold off on this update until after the
+          // new visualization has been rendered.
+          this.setState({ match, turnNumber });
+          this.startComputingVizForTurn(turnNumber);
+        } else {
+          this.setState({ match });
+        }
+      });
+  }
+
   private decrementTurnNumber() {
     if (this.state.turnNumber != undefined
         && this.state.turnNumber > 0) {
@@ -131,6 +165,8 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
     }
   }
 
+  // TODO: We could now end up here without having gotten the stylesheet yet...
+  // That will currently be a harmless error message, but we could explicitly handle that case
   private startComputingVizForTurn(turnNumber: number) {
     new Promise<string>((resolve, reject) => {
       setTimeout(() => {
@@ -238,6 +274,6 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
 
   private setTurnNumber(turnNumber: number) {
     this.startComputingVizForTurn(turnNumber);
-    this.setState({ turnNumber } as any as SingleMatchDisplayState);
+    this.setState({ turnNumber });
   }
 }
