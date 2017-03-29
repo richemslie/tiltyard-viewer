@@ -1,8 +1,7 @@
 import * as React from "react";
 import { MatchSummary } from "./match-list/MatchSummary";
 import { VerticalMatchList } from "./match-list/VerticalMatchList";
-import { TiltyardAllGamesMetadata } from "./MatchSelectingDisplay";
-import { TiltyardMatchSummary } from "./MatchSelectingDisplay";
+import { TiltyardAllGamesMetadata, TiltyardMatchSummary } from "./MatchSelectingDisplay";
 import { SingleMatchDisplay } from "./SingleMatchDisplay";
 
 export interface MatchSelectingDisplayProps {
@@ -16,6 +15,8 @@ export interface MatchSelectingDisplayState {
 }
 
 export class MatchSelectingDisplay extends React.Component<MatchSelectingDisplayProps, MatchSelectingDisplayState> {
+  private reloadMatchesRef: number;
+
   constructor(props?: MatchSelectingDisplayProps, context?: any) {
     super(props, context);
     this.state = {};
@@ -50,6 +51,45 @@ export class MatchSelectingDisplay extends React.Component<MatchSelectingDisplay
           allGamesMetadata: gamesMetadata,
         });
       });
+
+    // Start the regular match reloader
+    this.reloadMatchesRef = setInterval(() => this.reloadMatches(), 20000);
+  }
+
+  public componentWillUnmount() {
+    clearInterval(this.reloadMatchesRef);
+  }
+
+  private reloadMatches() {
+    const oldSummaries = this.state.availableMatchSummaries;
+    if (oldSummaries === undefined) {
+      // Wait for that to load the first time
+      return;
+    }
+    // The hash is the identifier for Tiltyard specifically
+    const matchListUrl = "http://database.ggp.org/query/filter,recent,90bd08a7df7b8113a45f1e537c1853c3974006b2";
+    fetch(matchListUrl)
+      .then((response) => { return response.text(); })
+      .then((body) => {
+        const rawMatchesList: RawMatchesList = JSON.parse(body);
+        const newSummaries: MatchSummary[] = rawMatchesList.queryMatches.map(toMatchSummary);
+        this.mergeOldSummariesIntoNew(oldSummaries, newSummaries);
+
+        this.setState({
+          availableMatchSummaries: newSummaries,
+          // TODO: In certain situations, we may also want to update the curMatchUrl
+        });
+      });
+  }
+
+  // Warning: Mutates newSummaries
+  private mergeOldSummariesIntoNew(oldSummaries: MatchSummary[], newSummaries: MatchSummary[]): void {
+    let alreadyAdded: Set<string> = new Set<string>(newSummaries.map((summary) => summary.matchUrl));
+    oldSummaries.forEach((summary) => {
+      if (!alreadyAdded.has(summary.matchUrl)) {
+        newSummaries.push(summary);
+      }
+    });
   }
 
   private renderWithVerticalMatchList(): JSX.Element {
