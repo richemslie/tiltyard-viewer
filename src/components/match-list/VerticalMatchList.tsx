@@ -12,13 +12,15 @@ export class VerticalMatchList extends React.Component<VerticalMatchListProps, {
   public render(): JSX.Element {
     return <div> { "Matches: "}
       { this.props.matchSummaries.map((matchSummary) =>
-        <div className="vertical-match-summary"><a onClick={() => this.props.onSelectMatch(matchSummary.matchUrl)}>
-          <div className="game-name-in-match-summary">{this.props.getGameName(matchSummary)}:</div>
-          {matchSummary.playerNames.map((name, index) =>
-            <div className="player-in-match-summary">
-              {name + getGoalInfo(matchSummary, index)}
-            </div>)}
-        </a></div>,
+        <div className="vertical-match-summary" key={matchSummary.matchUrl}>
+          <a onClick={() => this.props.onSelectMatch(matchSummary.matchUrl)}>
+            <div className="game-name-in-match-summary">{this.props.getGameName(matchSummary)}:</div>
+            {matchSummary.playerNames.map((name, index) =>
+              <div className="player-in-match-summary" key={index}>
+                {name + getGoalInfo(matchSummary, index)}
+              </div>)}
+          </a>
+        </div>,
       )}
     </div>;
   }

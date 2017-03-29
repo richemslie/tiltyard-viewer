@@ -1,3 +1,4 @@
+import { range } from "lodash";
 import * as React from "react";
 
 export interface MovesTableProps {
@@ -26,8 +27,8 @@ export class MovesTable extends React.Component<MovesTableProps, {}> {
     if (this.props.roleNames) {
       return <tr>
         <th>Turn</th>
-        { this.props.roleNames.map((roleName) => {
-          return <th>{roleName}</th>;
+        { this.props.roleNames.map((roleName, index) => {
+          return <th key={index}>{roleName}</th>;
         }) }
       </tr>;
     } else if (this.props.movesByTurn.length > 0) {
@@ -50,7 +51,7 @@ export class MovesTable extends React.Component<MovesTableProps, {}> {
   }
 
   private getPreMovesCells(count: number): JSX.Element[] {
-    return new Array(count).fill(<td>&mdash;</td>);
+    return range(count).map((index) => <td key={index}>&mdash;</td>);
   }
 
   private getMoveRows(): JSX.Element[] {
