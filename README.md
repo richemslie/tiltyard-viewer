@@ -1,4 +1,4 @@
-# web-experiment
+# tiltyard-viewer
 An alternative match viewer for Tiltyard, in the form of a single-page app.
 
 Built with TypeScript and React.
