@@ -1,0 +1,4 @@
+.moves-table-holder {
+  height: 60vh;
+  overflow-y: auto;
+}

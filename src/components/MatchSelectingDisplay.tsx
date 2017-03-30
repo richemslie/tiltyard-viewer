@@ -23,7 +23,25 @@ export class MatchSelectingDisplay extends React.Component<MatchSelectingDisplay
   }
 
   public render(): JSX.Element {
-    return this.renderWithVerticalMatchList();
+    return <div className="vertical-match-selecting-display">
+        <div className="match-display-column">
+          {this.state.curMatchUrl
+            ? <SingleMatchDisplay matchUrl={this.state.curMatchUrl} />
+            : "No match selected."}
+         </div>
+        <div className="match-selector-column">
+          <VerticalMatchList
+            matchSummaries={this.state.availableMatchSummaries || []}
+            onSelectMatch={(matchId: string) => {
+              this.setState({curMatchUrl: matchId});
+            }}
+            getGameName={this.state.allGamesMetadata != undefined
+              ? gameNameFromMetadataGetter(this.state.allGamesMetadata)
+              : GAME_NAME_FROM_URL_GETTER
+            }
+             />
+        </div>
+      </div>;
   }
 
   public componentDidMount(): void {
@@ -90,28 +108,6 @@ export class MatchSelectingDisplay extends React.Component<MatchSelectingDisplay
         newSummaries.push(summary);
       }
     });
-  }
-
-  private renderWithVerticalMatchList(): JSX.Element {
-    return <div className="vertical-match-selecting-display">
-        <div className="match-display-column">
-          {this.state.curMatchUrl
-            ? <SingleMatchDisplay matchUrl={this.state.curMatchUrl} />
-            : "No match selected."}
-         </div>
-        <div className="match-selector-column">
-          <VerticalMatchList
-            matchSummaries={this.state.availableMatchSummaries || []}
-            onSelectMatch={(matchId: string) => {
-              this.setState({curMatchUrl: matchId});
-            }}
-            getGameName={this.state.allGamesMetadata != undefined
-              ? gameNameFromMetadataGetter(this.state.allGamesMetadata)
-              : GAME_NAME_FROM_URL_GETTER
-            }
-             />
-        </div>
-      </div>;
   }
 }
 

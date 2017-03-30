@@ -4,12 +4,16 @@ An alternative match viewer for Tiltyard, in the form of a single-page app.
 Built with TypeScript and React.
 
 TODOs:
-- Less ugly list of matches
+- Deploy!
+- Match list:
+  - Indicate which match is currently shown
+  - Ability to open match in new tab (via e.g. middle-click)
   - Visual indicator of completion/abandonment
-- Limit visual length of moves list
-- Scroll matches list independently of rest of viewer
+- Moves list
+  - Ability to display timing data
+  - Better specification of its height (flex inside vh-limited div)
 - Adjust match visualization to available screen space (?)
-- Get updates to match list live
+- Use a nice sans-serif font
 - Filter down matches by player(s), game(s), or tournament
   - UI for choosing these
   - When filtered by player, follow new matches as they start

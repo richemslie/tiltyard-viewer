@@ -1,4 +1,5 @@
 @import './components/match-list/VerticalMatchList.css';
+@import './components/MatchInfo.css';
 @import './components/MatchSelectingDisplay.css';
 @import './components/MovesTable.css';
 @import './components/SingleMatchDisplay.css';
