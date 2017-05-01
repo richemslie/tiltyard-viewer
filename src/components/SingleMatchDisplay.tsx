@@ -71,17 +71,17 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
 
     // Set up keyboard shortcuts for changing states
     $(document).keypress((e) => {
-      if (e.keyCode === 37) {
-        // Left arrow
+      if (e.keyCode === 37 || e.keyCode === 97) {
+        // Left arrow or 'A'
         this.decrementTurnNumber();
-      } else if (e.keyCode === 38) {
-        // Up arrow
+      } else if (e.keyCode === 38 || e.keyCode === 119) {
+        // Up arrow or 'W'
         this.decrementTurnNumber();
-      } else if (e.keyCode === 39) {
-        // Right arrow
+      } else if (e.keyCode === 39 || e.keyCode === 100) {
+        // Right arrow or 'D'
         this.incrementTurnNumber();
-      } else if (e.keyCode === 40) {
-        // Down arrow
+      } else if (e.keyCode === 40 || e.keyCode === 115) {
+        // Down arrow or 'S'
         this.incrementTurnNumber();
       }
     });
