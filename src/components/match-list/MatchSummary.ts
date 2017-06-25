@@ -3,4 +3,5 @@ export interface MatchSummary {
   gameMetaUrl: string;
   playerNames: string[];
   goalValues?: number[];
+  aborted: boolean;
 }

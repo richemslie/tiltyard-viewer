@@ -17,6 +17,7 @@ export class MatchInfo extends React.Component<MatchInfoProps, {}> {
          Play clock: {this.props.match.playClock}</p>
       <div>Players involved:<br/>
         {this.getPlayersInvolved()}</div>
+      {this.props.match.isAborted ? this.getAbortedMessage() : ""}
       <div className="moves-table-holder">
         <MovesTable roleNames={this.props.gameMetadata && this.props.gameMetadata.roleNames}
           movesByTurn={this.props.match.moves}
@@ -26,7 +27,13 @@ export class MatchInfo extends React.Component<MatchInfoProps, {}> {
     </div>;
   }
 
-  private getGameName() {
+  private getAbortedMessage(): React.ReactChild {
+    return <p>
+      (This match has been aborted.)
+    </p>;
+  }
+
+  private getGameName(): React.ReactChild {
     const metaUrl = this.props.match.gameMetaURL;
     if (this.props.gameMetadata) {
       const searchTerm = "//games.ggp.org/";
@@ -47,9 +54,9 @@ export class MatchInfo extends React.Component<MatchInfoProps, {}> {
     return <text>{metaUrl}</text>;
   }
 
-  private getPlayersInvolved(): JSX.Element[] {
+  private getPlayersInvolved(): React.ReactChild[] {
     return this.props.match.playerNamesFromHost.map((playerName, index) => {
-      return <div key={index}>{playerName} as {getRoleIdentifier(this.props.gameMetadata, index)}
+      return <div key={index}>{playerName || "Anonymous"} as {getRoleIdentifier(this.props.gameMetadata, index)}
         {getGoalInfo(this.props.match, index)}</div>;
     });
   }

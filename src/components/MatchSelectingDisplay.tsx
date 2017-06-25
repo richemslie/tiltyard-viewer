@@ -156,11 +156,19 @@ function gameNameFromMetadataGetter(allGamesMetadata: TiltyardAllGamesMetadata):
 
 function toMatchSummary(rawMatch: TiltyardMatchSummary): MatchSummary {
   return {
+    aborted: rawMatch.isAborted,
     gameMetaUrl: rawMatch.gameMetaURL,
     goalValues: rawMatch.goalValues,
     matchUrl: rawMatch.matchURL,
-    playerNames: rawMatch.playerNamesFromHost,
+    playerNames: rawMatch.playerNamesFromHost.map(transformPlayerName),
   };
+}
+
+function transformPlayerName(rawName: string): string {
+  if (rawName == undefined || rawName === "") {
+    return "Anonymous";
+  }
+  return rawName;
 }
 
 export interface RawMatchesList {
