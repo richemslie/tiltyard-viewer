@@ -1,3 +1,7 @@
 .turn-number {
   text-align: right;
 }
+
+.error-cell {
+  background-color: #ffaaaa;
+}

@@ -4,6 +4,7 @@ import * as React from "react";
 export interface MovesTableProps {
   roleNames?: string[];
   movesByTurn: string[][];
+  errorsByTurn: (string | undefined)[][];
   turnNumber?: number;
   setTurnNumber: (turnNumber: number) => void;
 }
@@ -56,12 +57,16 @@ export class MovesTable extends React.Component<MovesTableProps, {}> {
 
   private getMoveRows(): JSX.Element[] {
     return this.props.movesByTurn.map((moves, index) => {
+      const errors = this.props.errorsByTurn[index];
       let turnNumber = index + 1;
       let arrow = (turnNumber === this.props.turnNumber) ? "> " : "";
       return <tr key={turnNumber} onClick={() => { this.props.setTurnNumber(turnNumber); }}>
         <td key="moveNum" className="turn-number">{arrow + turnNumber}</td>
         { moves.map((move, roleIndex) => {
-          return <td key={roleIndex}>{prettifyMove(move)}</td>;
+          const error = errors[roleIndex];
+          const title = !!error ? error : "";
+          const classNames = !!error ? "error-cell" : "";
+          return <td className={classNames} key={roleIndex} title={title}>{prettifyMove(move)}</td>;
         })}
       </tr>;
     });

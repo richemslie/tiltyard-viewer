@@ -21,6 +21,7 @@ export class MatchInfo extends React.Component<MatchInfoProps, {}> {
       <div className="moves-table-holder">
         <MovesTable roleNames={this.props.gameMetadata && this.props.gameMetadata.roleNames}
           movesByTurn={this.props.match.moves}
+          errorsByTurn={this.props.match.errors}
           turnNumber={this.props.turnNumber}
           setTurnNumber={this.props.setTurnNumber} />
       </div>
