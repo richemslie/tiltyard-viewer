@@ -50,7 +50,7 @@
 	var ReactDOM = __webpack_require__(2);
 	var MatchSelectingDisplay_1 = __webpack_require__(3);
 	// Hex
-	var matchId = "http://matches.ggp.org/matches/99b8572c92c9b236867f8bb8d94bb3bf9645bf51/";
+	var matchId = "https://matches.ggp.org/matches/99b8572c92c9b236867f8bb8d94bb3bf9645bf51/";
 	// This tells Webpack to magically add our CSS here.
 	__webpack_require__(15); // tslint:disable-line
 	ReactDOM.render(
@@ -112,7 +112,7 @@
 	    MatchSelectingDisplay.prototype.componentDidMount = function () {
 	        var _this = this;
 	        // The hash is the identifier for Tiltyard specifically
-	        var matchListUrl = "http://database.ggp.org/query/filter,recent,90bd08a7df7b8113a45f1e537c1853c3974006b2";
+	        var matchListUrl = "https://database.ggp.org/query/filter,recent,90bd08a7df7b8113a45f1e537c1853c3974006b2";
 	        fetch(matchListUrl)
 	            .then(function (response) { return response.text(); })
 	            .then(function (body) {
@@ -123,7 +123,7 @@
 	                curMatchUrl: summaries.length > 0 ? summaries[0].matchUrl : undefined,
 	            });
 	        });
-	        var gameMetadataUrl = "http://games.ggp.org/base/games/metadata";
+	        var gameMetadataUrl = "https://games.ggp.org/base/games/metadata";
 	        fetch(gameMetadataUrl)
 	            .then(function (response) { return response.text(); })
 	            .then(function (body) {
@@ -146,7 +146,7 @@
 	            return;
 	        }
 	        // The hash is the identifier for Tiltyard specifically
-	        var matchListUrl = "http://database.ggp.org/query/filter,recent,90bd08a7df7b8113a45f1e537c1853c3974006b2";
+	        var matchListUrl = "https://database.ggp.org/query/filter,recent,90bd08a7df7b8113a45f1e537c1853c3974006b2";
 	        fetch(matchListUrl)
 	            .then(function (response) { return response.text(); })
 	            .then(function (body) {
@@ -198,11 +198,18 @@
 	}
 	function toMatchSummary(rawMatch) {
 	    return {
+	        aborted: rawMatch.isAborted,
 	        gameMetaUrl: rawMatch.gameMetaURL,
 	        goalValues: rawMatch.goalValues,
 	        matchUrl: rawMatch.matchURL,
-	        playerNames: rawMatch.playerNamesFromHost,
+	        playerNames: rawMatch.playerNamesFromHost.map(transformPlayerName),
 	    };
+	}
+	function transformPlayerName(rawName) {
+	    if (rawName == undefined || rawName === "") {
+	        return "Anonymous";
+	    }
+	    return rawName;
 	}
 
 
@@ -239,6 +246,7 @@
 	                        React.createElement("div", { className: "game-name-in-match-summary" },
 	                            _this.props.getGameName(matchSummary),
 	                            ":"),
+	                        matchSummary.aborted ? React.createElement("i", null, "(Aborted)") : "",
 	                        matchSummary.playerNames.map(function (name, index) {
 	                            return React.createElement("div", { className: "player-in-match-summary", key: index }, name + getGoalInfo(matchSummary, index));
 	                        })));
@@ -319,20 +327,20 @@
 	        this.loadGameAndMatch();
 	        // Set up keyboard shortcuts for changing states
 	        $(document).keypress(function (e) {
-	            if (e.keyCode === 37) {
-	                // Left arrow
+	            if (e.keyCode === 37 || e.keyCode === 97) {
+	                // Left arrow or 'A'
 	                _this.decrementTurnNumber();
 	            }
-	            else if (e.keyCode === 38) {
-	                // Up arrow
+	            else if (e.keyCode === 38 || e.keyCode === 119) {
+	                // Up arrow or 'W'
 	                _this.decrementTurnNumber();
 	            }
-	            else if (e.keyCode === 39) {
-	                // Right arrow
+	            else if (e.keyCode === 39 || e.keyCode === 100) {
+	                // Right arrow or 'D'
 	                _this.incrementTurnNumber();
 	            }
-	            else if (e.keyCode === 40) {
-	                // Down arrow
+	            else if (e.keyCode === 40 || e.keyCode === 115) {
+	                // Down arrow or 'S'
 	                _this.incrementTurnNumber();
 	            }
 	        });
@@ -28401,8 +28409,12 @@
 	                "Players involved:",
 	                React.createElement("br", null),
 	                this.getPlayersInvolved()),
+	            this.props.match.isAborted ? this.getAbortedMessage() : "",
 	            React.createElement("div", { className: "moves-table-holder" },
-	                React.createElement(MovesTable_1.MovesTable, { roleNames: this.props.gameMetadata && this.props.gameMetadata.roleNames, movesByTurn: this.props.match.moves, turnNumber: this.props.turnNumber, setTurnNumber: this.props.setTurnNumber })));
+	                React.createElement(MovesTable_1.MovesTable, { roleNames: this.props.gameMetadata && this.props.gameMetadata.roleNames, movesByTurn: this.props.match.moves, errorsByTurn: this.props.match.errors, turnNumber: this.props.turnNumber, setTurnNumber: this.props.setTurnNumber })));
+	    };
+	    MatchInfo.prototype.getAbortedMessage = function () {
+	        return React.createElement("p", null, "(This match has been aborted.)");
 	    };
 	    MatchInfo.prototype.getGameName = function () {
 	        var metaUrl = this.props.match.gameMetaURL;
@@ -28428,7 +28440,7 @@
 	        var _this = this;
 	        return this.props.match.playerNamesFromHost.map(function (playerName, index) {
 	            return React.createElement("div", { key: index },
-	                playerName,
+	                playerName || "Anonymous",
 	                " as ",
 	                getRoleIdentifier(_this.props.gameMetadata, index),
 	                getGoalInfo(_this.props.match, index));
@@ -28521,12 +28533,16 @@
 	    MovesTable.prototype.getMoveRows = function () {
 	        var _this = this;
 	        return this.props.movesByTurn.map(function (moves, index) {
+	            var errors = _this.props.errorsByTurn[index];
 	            var turnNumber = index + 1;
 	            var arrow = (turnNumber === _this.props.turnNumber) ? "> " : "";
 	            return React.createElement("tr", { key: turnNumber, onClick: function () { _this.props.setTurnNumber(turnNumber); } },
 	                React.createElement("td", { key: "moveNum", className: "turn-number" }, arrow + turnNumber),
 	                moves.map(function (move, roleIndex) {
-	                    return React.createElement("td", { key: roleIndex }, prettifyMove(move));
+	                    var error = errors[roleIndex];
+	                    var title = !!error ? error : "";
+	                    var classNames = !!error ? "error-cell" : "";
+	                    return React.createElement("td", { className: classNames, key: roleIndex, title: title }, prettifyMove(move));
 	                }));
 	        });
 	    };
@@ -28609,7 +28625,7 @@
 	exports.i(__webpack_require__(22), "");
 	
 	// module
-	exports.push([module.id, "\r\n", ""]);
+	exports.push([module.id, "\n", ""]);
 	
 	// exports
 
@@ -28679,7 +28695,7 @@
 	
 	
 	// module
-	exports.push([module.id, ".player-in-match-summary {\r\n  padding-left: 2em;\r\n  font-size: 95%;\r\n}\r\n\r\n.game-name-in-match-summary {\r\n  font-size: 105%;\r\n}\r\n\r\n.vertical-match-summary {\r\n  margin-top: 8px;\r\n}\r\n.vertical-match-summary > a {\r\n  cursor: pointer;\r\n}\r\n", ""]);
+	exports.push([module.id, ".player-in-match-summary {\n  padding-left: 2em;\n  font-size: 95%;\n}\n\n.game-name-in-match-summary {\n  font-size: 105%;\n}\n\n.vertical-match-summary {\n  margin-top: 8px;\n}\n.vertical-match-summary > a {\n  cursor: pointer;\n}\n", ""]);
 	
 	// exports
 
@@ -28693,7 +28709,7 @@
 	
 	
 	// module
-	exports.push([module.id, ".moves-table-holder {\r\n  height: 60vh;\r\n  overflow-y: auto;\r\n}\r\n", ""]);
+	exports.push([module.id, ".moves-table-holder {\n  height: 60vh;\n  overflow-y: auto;\n}\n", ""]);
 	
 	// exports
 
@@ -28707,7 +28723,7 @@
 	
 	
 	// module
-	exports.push([module.id, ".vertical-match-selecting-display {\r\n  display: flex;\r\n  flex-direction: row;\r\n}\r\n\r\n.vertical-match-selecting-display > .match-display-column {\r\n  flex: 1 1 auto;\r\n}\r\n\r\n.vertical-match-selecting-display > .match-selector-column {\r\n  flex: 0 0 15em;\r\n  background-color: aliceblue;\r\n  padding: 1em;\r\n}\r\n\r\n.match-selector-column {\r\n  height: 92vh;\r\n  overflow-y: auto;\r\n}\r\n", ""]);
+	exports.push([module.id, ".vertical-match-selecting-display {\n  display: flex;\n  flex-direction: row;\n}\n\n.vertical-match-selecting-display > .match-display-column {\n  flex: 1 1 auto;\n}\n\n.vertical-match-selecting-display > .match-selector-column {\n  flex: 0 0 15em;\n  background-color: aliceblue;\n  padding: 1em;\n}\n\n.match-selector-column {\n  height: 92vh;\n  overflow-y: auto;\n}\n", ""]);
 	
 	// exports
 
@@ -28721,7 +28737,7 @@
 	
 	
 	// module
-	exports.push([module.id, ".turn-number {\r\n  text-align: right;\r\n}", ""]);
+	exports.push([module.id, ".turn-number {\n  text-align: right;\n}\n\n.error-cell {\n  background-color: #ffaaaa;\n}\n", ""]);
 	
 	// exports
 
@@ -28735,7 +28751,7 @@
 	
 	
 	// module
-	exports.push([module.id, "\r\n.singleMatchDisplay {\r\n  display: flex;\r\n  flex-direction: row;\r\n}\r\n\r\n.singleMatchDisplay > .sidePanel {\r\n  flex: 0 0 auto;\r\n\r\n  margin: 10px;\r\n}\r\n\r\n.singleMatchDisplay > .mainPanel {\r\n  flex: 1 1 auto;\r\n\r\n  margin: 10px;\r\n}\r\n", ""]);
+	exports.push([module.id, "\n.singleMatchDisplay {\n  display: flex;\n  flex-direction: row;\n}\n\n.singleMatchDisplay > .sidePanel {\n  flex: 0 0 auto;\n\n  margin: 10px;\n}\n\n.singleMatchDisplay > .mainPanel {\n  flex: 1 1 auto;\n\n  margin: 10px;\n}\n", ""]);
 	
 	// exports
 

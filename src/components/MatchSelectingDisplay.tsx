@@ -46,7 +46,7 @@ export class MatchSelectingDisplay extends React.Component<MatchSelectingDisplay
 
   public componentDidMount(): void {
     // The hash is the identifier for Tiltyard specifically
-    const matchListUrl = "http://database.ggp.org/query/filter,recent,90bd08a7df7b8113a45f1e537c1853c3974006b2";
+    const matchListUrl = "https://database.ggp.org/query/filter,recent,90bd08a7df7b8113a45f1e537c1853c3974006b2";
     fetch(matchListUrl)
       .then((response) => { return response.text(); })
       .then((body) => {
@@ -59,7 +59,7 @@ export class MatchSelectingDisplay extends React.Component<MatchSelectingDisplay
         });
       });
 
-    const gameMetadataUrl = "http://games.ggp.org/base/games/metadata";
+    const gameMetadataUrl = "https://games.ggp.org/base/games/metadata";
     fetch(gameMetadataUrl)
       .then((response) => { return response.text(); })
       .then((body) => {
@@ -85,7 +85,7 @@ export class MatchSelectingDisplay extends React.Component<MatchSelectingDisplay
       return;
     }
     // The hash is the identifier for Tiltyard specifically
-    const matchListUrl = "http://database.ggp.org/query/filter,recent,90bd08a7df7b8113a45f1e537c1853c3974006b2";
+    const matchListUrl = "https://database.ggp.org/query/filter,recent,90bd08a7df7b8113a45f1e537c1853c3974006b2";
     fetch(matchListUrl)
       .then((response) => { return response.text(); })
       .then((body) => {

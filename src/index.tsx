@@ -5,7 +5,7 @@ import { MatchSelectingDisplay } from "./components/MatchSelectingDisplay";
 import { SingleMatchDisplay, SingleMatchDisplayProps } from "./components/SingleMatchDisplay";
 
 // Hex
-let matchId = "http://matches.ggp.org/matches/99b8572c92c9b236867f8bb8d94bb3bf9645bf51/";
+let matchId = "https://matches.ggp.org/matches/99b8572c92c9b236867f8bb8d94bb3bf9645bf51/";
 // Rubik's cube: unlike Tiltyard, works fine in Firefox
 // let matchId = "http://matches.ggp.org/matches/b17fa24a19287f86b105f55cb773a71ff85732e5/";
 // Atari Go: unlike Tiltyard, works fine in Firefox
