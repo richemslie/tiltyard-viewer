@@ -131,7 +131,8 @@ const GAME_NAME_FROM_URL_GETTER = (matchSummary: MatchSummary) => {
 };
 
 function getGameKeyFromMetaUrl(gameMetaUrl: string): string {
-  if (gameMetaUrl.startsWith("http://games.ggp.org/")) {
+  if (gameMetaUrl.startsWith("http://games.ggp.org/")
+      || gameMetaUrl.startsWith("https://games.ggp.org/")) {
     let components = gameMetaUrl.split("/");
     if (components.length >= 6) {
       return components[5];
@@ -157,18 +158,18 @@ function gameNameFromMetadataGetter(allGamesMetadata: TiltyardAllGamesMetadata):
 function toMatchSummary(rawMatch: TiltyardMatchSummary): MatchSummary {
   return {
     aborted: rawMatch.isAborted,
-    gameMetaUrl: rawMatch.gameMetaURL,
+    gameMetaUrl: securifyUrl(rawMatch.gameMetaURL),
     goalValues: rawMatch.goalValues,
-    matchUrl: transformMatchUrl(rawMatch.matchURL),
+    matchUrl: securifyUrl(rawMatch.matchURL),
     playerNames: rawMatch.playerNamesFromHost.map(transformPlayerName),
   };
 }
 
-function transformMatchUrl(matchUrl: string): string {
-  if (matchUrl.startsWith("http:")) {
-    return matchUrl.replace("http:", "https:");
+function securifyUrl(url: string): string {
+  if (url.startsWith("http:")) {
+    return url.replace("http:", "https:");
   }
-  return matchUrl;
+  return url;
 }
 
 function transformPlayerName(rawName: string): string {
