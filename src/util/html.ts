@@ -6,3 +6,10 @@ export function getHtmlDestructively(node: Node): string {
   tmp.remove();
   return vizHtml;
 }
+
+export function securifyUrl(url: string): string {
+  if (url.startsWith("http:")) {
+    return url.replace("http:", "https:");
+  }
+  return url;
+}

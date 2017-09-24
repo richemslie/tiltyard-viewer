@@ -87,8 +87,9 @@
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var React = __webpack_require__(1);
-	var VerticalMatchList_1 = __webpack_require__(4);
-	var SingleMatchDisplay_1 = __webpack_require__(5);
+	var html_1 = __webpack_require__(4);
+	var VerticalMatchList_1 = __webpack_require__(5);
+	var SingleMatchDisplay_1 = __webpack_require__(6);
 	var MatchSelectingDisplay = (function (_super) {
 	    __extends(MatchSelectingDisplay, _super);
 	    function MatchSelectingDisplay(props, context) {
@@ -200,17 +201,11 @@
 	function toMatchSummary(rawMatch) {
 	    return {
 	        aborted: rawMatch.isAborted,
-	        gameMetaUrl: securifyUrl(rawMatch.gameMetaURL),
+	        gameMetaUrl: html_1.securifyUrl(rawMatch.gameMetaURL),
 	        goalValues: rawMatch.goalValues,
-	        matchUrl: securifyUrl(rawMatch.matchURL),
+	        matchUrl: html_1.securifyUrl(rawMatch.matchURL),
 	        playerNames: rawMatch.playerNamesFromHost.map(transformPlayerName),
 	    };
-	}
-	function securifyUrl(url) {
-	    if (url.startsWith("http:")) {
-	        return url.replace("http:", "https:");
-	    }
-	    return url;
 	}
 	function transformPlayerName(rawName) {
 	    if (rawName == undefined || rawName === "") {
@@ -222,6 +217,30 @@
 
 /***/ },
 /* 4 */
+/***/ function(module, exports) {
+
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	// Note: This modifies the input.
+	function getHtmlDestructively(node) {
+	    var tmp = document.createElement("div");
+	    tmp.appendChild(node);
+	    var vizHtml = tmp.innerHTML;
+	    tmp.remove();
+	    return vizHtml;
+	}
+	exports.getHtmlDestructively = getHtmlDestructively;
+	function securifyUrl(url) {
+	    if (url.startsWith("http:")) {
+	        return url.replace("http:", "https:");
+	    }
+	    return url;
+	}
+	exports.securifyUrl = securifyUrl;
+
+
+/***/ },
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -271,7 +290,7 @@
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -286,11 +305,11 @@
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var $ = __webpack_require__(6);
-	var _ = __webpack_require__(7);
+	var $ = __webpack_require__(7);
+	var _ = __webpack_require__(8);
 	var React = __webpack_require__(1);
-	__webpack_require__(9);
-	var html_1 = __webpack_require__(10);
+	__webpack_require__(10);
+	var html_1 = __webpack_require__(4);
 	var xslt_1 = __webpack_require__(11);
 	var MatchInfo_1 = __webpack_require__(12);
 	var RawHtmlVisualization_1 = __webpack_require__(14);
@@ -369,13 +388,14 @@
 	                turnNumber = match.states.length - 1;
 	            }
 	            _this.setState({ match: match, turnNumber: turnNumber });
-	            fetch(match.gameMetaURL)
+	            var gameMetaURL = html_1.securifyUrl(match.gameMetaURL);
+	            fetch(gameMetaURL)
 	                .then(function (response) { return response.text(); })
 	                .then(function (gameMetadataText) {
 	                var game = JSON.parse(gameMetadataText);
 	                _this.setState(function (prevState, props) { return (_.assign({}, prevState, { gameMetadata: game, gameText: body })); });
 	                if (game.stylesheet) {
-	                    var stylesheetUrl = match.gameMetaURL + game.stylesheet;
+	                    var stylesheetUrl = gameMetaURL + game.stylesheet;
 	                    fetch(stylesheetUrl)
 	                        .then(function (response) { return response.text(); })
 	                        .then(function (stylesheet) {
@@ -535,7 +555,7 @@
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -10761,7 +10781,7 @@
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global, module) {/**
@@ -27849,10 +27869,10 @@
 	  }
 	}.call(this));
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(8)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(9)(module)))
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -27868,7 +27888,7 @@
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports) {
 
 	(function(self) {
@@ -28340,23 +28360,6 @@
 
 
 /***/ },
-/* 10 */
-/***/ function(module, exports) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	// Note: This modifies the input.
-	function getHtmlDestructively(node) {
-	    var tmp = document.createElement("div");
-	    tmp.appendChild(node);
-	    var vizHtml = tmp.innerHTML;
-	    tmp.remove();
-	    return vizHtml;
-	}
-	exports.getHtmlDestructively = getHtmlDestructively;
-
-
-/***/ },
 /* 11 */
 /***/ function(module, exports) {
 
@@ -28486,7 +28489,7 @@
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var lodash_1 = __webpack_require__(7);
+	var lodash_1 = __webpack_require__(8);
 	var React = __webpack_require__(1);
 	// Turns '( place 3 1 )' into '(place 3 1)'
 	function prettifyMove(move) {

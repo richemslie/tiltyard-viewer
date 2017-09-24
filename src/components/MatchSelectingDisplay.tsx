@@ -1,4 +1,5 @@
 import * as React from "react";
+import { securifyUrl } from "../util/html";
 import { MatchSummary } from "./match-list/MatchSummary";
 import { VerticalMatchList } from "./match-list/VerticalMatchList";
 import { TiltyardAllGamesMetadata, TiltyardMatchSummary } from "./MatchSelectingDisplay";
@@ -163,13 +164,6 @@ function toMatchSummary(rawMatch: TiltyardMatchSummary): MatchSummary {
     matchUrl: securifyUrl(rawMatch.matchURL),
     playerNames: rawMatch.playerNamesFromHost.map(transformPlayerName),
   };
-}
-
-function securifyUrl(url: string): string {
-  if (url.startsWith("http:")) {
-    return url.replace("http:", "https:");
-  }
-  return url;
 }
 
 function transformPlayerName(rawName: string): string {

@@ -3,7 +3,7 @@ import * as _ from "lodash";
 import * as React from "react";
 import "whatwg-fetch";
 import { TiltyardGameRawMetadata, TiltyardMatch } from "../types";
-import { getHtmlDestructively } from "../util/html";
+import { getHtmlDestructively, securifyUrl } from "../util/html";
 import { applyXslt } from "../util/xslt";
 import { MatchInfo } from "./MatchInfo";
 import { RawHtmlVisualization } from "./RawHtmlVisualization";
@@ -105,14 +105,15 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
           turnNumber = match.states.length - 1;
         }
         this.setState({ match, turnNumber });
-        fetch(match.gameMetaURL)
+        const gameMetaURL = securifyUrl(match.gameMetaURL);
+        fetch(gameMetaURL)
           .then((response) => { return response.text(); })
           .then((gameMetadataText) => {
             let game: TiltyardGameRawMetadata = JSON.parse(gameMetadataText);
             this.setState((prevState, props) => (_.assign({}, prevState, { gameMetadata: game, gameText: body })));
 
             if (game.stylesheet) {
-              let stylesheetUrl = match.gameMetaURL + game.stylesheet;
+              let stylesheetUrl = gameMetaURL + game.stylesheet;
               fetch(stylesheetUrl)
                 .then((response) => { return response.text(); })
                 .then((stylesheet: string) => {
