@@ -137,8 +137,9 @@ export class SingleMatchDisplay extends React.Component<SingleMatchDisplayProps,
       .then((body) => {
         let match: TiltyardMatch = JSON.parse(body);
 
-        // Update the turn number if we're currently looking at the last turn
-        const onLastTurn = (this.state.turnNumber === this.state.match.moves.length);
+        // Update the turn number if we're currently looking at the last turn (or at nothing at all)
+        const onLastTurn = this.state.match === undefined
+          || (this.state.turnNumber === this.state.match.moves.length);
         if (onLastTurn) {
           let turnNumber = match.states.length - 1;
           // TODO: It would be nice if we could somehow hold off on this update until after the

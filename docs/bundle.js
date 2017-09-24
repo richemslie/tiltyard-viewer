@@ -417,8 +417,9 @@
 	            .then(function (response) { return response.text(); })
 	            .then(function (body) {
 	            var match = JSON.parse(body);
-	            // Update the turn number if we're currently looking at the last turn
-	            var onLastTurn = (_this.state.turnNumber === _this.state.match.moves.length);
+	            // Update the turn number if we're currently looking at the last turn (or at nothing at all)
+	            var onLastTurn = _this.state.match === undefined
+	                || (_this.state.turnNumber === _this.state.match.moves.length);
 	            if (onLastTurn) {
 	                var turnNumber = match.states.length - 1;
 	                // TODO: It would be nice if we could somehow hold off on this update until after the
