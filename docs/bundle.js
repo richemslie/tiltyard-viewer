@@ -201,9 +201,15 @@
 	        aborted: rawMatch.isAborted,
 	        gameMetaUrl: rawMatch.gameMetaURL,
 	        goalValues: rawMatch.goalValues,
-	        matchUrl: rawMatch.matchURL,
+	        matchUrl: transformMatchUrl(rawMatch.matchURL),
 	        playerNames: rawMatch.playerNamesFromHost.map(transformPlayerName),
 	    };
+	}
+	function transformMatchUrl(matchUrl) {
+	    if (matchUrl.startsWith("http:")) {
+	        return matchUrl.replace("http:", "https:");
+	    }
+	    return matchUrl;
 	}
 	function transformPlayerName(rawName) {
 	    if (rawName == undefined || rawName === "") {
