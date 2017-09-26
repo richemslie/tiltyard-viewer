@@ -1,9 +1,13 @@
 import * as React from "react";
+import { Mosaic } from "react-mosaic-component";
 import { securifyUrl } from "../util/html";
 import { MatchSummary } from "./match-list/MatchSummary";
 import { VerticalMatchList } from "./match-list/VerticalMatchList";
 import { TiltyardAllGamesMetadata, TiltyardMatchSummary } from "./MatchSelectingDisplay";
 import { SingleMatchDisplay } from "./SingleMatchDisplay";
+
+// Make a simple extension class to preserve generic type checking in TSX
+class ElementMosaic extends Mosaic<React.ReactElement<any>> { }
 
 export interface MatchSelectingDisplayProps {
 }
@@ -15,6 +19,7 @@ export interface MatchSelectingDisplayState {
   allGamesMetadata?: TiltyardAllGamesMetadata;
 }
 
+// tslint:disable-next-line:max-classes-per-file
 export class MatchSelectingDisplay extends React.Component<MatchSelectingDisplayProps, MatchSelectingDisplayState> {
   private reloadMatchesRef: number;
 
@@ -24,25 +29,27 @@ export class MatchSelectingDisplay extends React.Component<MatchSelectingDisplay
   }
 
   public render(): JSX.Element {
-    return <div className="vertical-match-selecting-display">
-        <div className="match-display-column">
-          {this.state.curMatchUrl
-            ? <SingleMatchDisplay matchUrl={this.state.curMatchUrl} />
-            : "No match selected."}
-         </div>
-        <div className="match-selector-column">
-          <VerticalMatchList
-            matchSummaries={this.state.availableMatchSummaries || []}
-            onSelectMatch={(matchId: string) => {
-              this.setState({curMatchUrl: matchId});
-            }}
-            getGameName={this.state.allGamesMetadata != undefined
-              ? gameNameFromMetadataGetter(this.state.allGamesMetadata)
-              : GAME_NAME_FROM_URL_GETTER
-            }
-             />
-        </div>
-      </div>;
+    return (
+      <ElementMosaic
+        renderTile = {(e) => e}
+        initialValue = {{
+          direction: "row" as "row",
+          first: this.state.curMatchUrl
+             ? <SingleMatchDisplay matchUrl={this.state.curMatchUrl} />
+             : <div>No match selected.</div>,
+          second: <VerticalMatchList
+                    matchSummaries={this.state.availableMatchSummaries || []}
+                    onSelectMatch={(matchId: string) => {
+                      this.setState({curMatchUrl: matchId});
+                    }}
+                    getGameName={this.state.allGamesMetadata != undefined
+                      ? gameNameFromMetadataGetter(this.state.allGamesMetadata)
+                      : GAME_NAME_FROM_URL_GETTER
+                    }
+                  />,
+        }}
+      />
+    );
   }
 
   public componentDidMount(): void {
