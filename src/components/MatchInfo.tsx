@@ -15,8 +15,8 @@ export class MatchInfo extends React.Component<MatchInfoProps, {}> {
       <p>Game: { this.getGameName() }</p>
       <p>Start clock: {this.props.match.startClock}<br/>
          Play clock: {this.props.match.playClock}</p>
-      <div>Players involved:<br/>
-        {this.getPlayersInvolved()}</div>
+      <p>Players:<br/>
+        {this.getPlayersInvolved()}</p>
       {this.props.match.isAborted ? this.getAbortedMessage() : ""}
       <div className="moves-table-holder">
         <MovesTable roleNames={this.props.gameMetadata && this.props.gameMetadata.roleNames}

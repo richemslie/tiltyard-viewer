@@ -4,7 +4,7 @@ import * as React from "react";
 export interface MovesTableProps {
   roleNames?: string[];
   movesByTurn: string[][];
-  errorsByTurn: (string | undefined)[][];
+  errorsByTurn: Array<Array<string | undefined>>;
   turnNumber?: number;
   setTurnNumber: (turnNumber: number) => void;
 }

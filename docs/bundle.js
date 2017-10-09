@@ -28416,8 +28416,8 @@
 	                React.createElement("br", null),
 	                "Play clock: ",
 	                this.props.match.playClock),
-	            React.createElement("div", null,
-	                "Players involved:",
+	            React.createElement("p", null,
+	                "Players:",
 	                React.createElement("br", null),
 	                this.getPlayersInvolved()),
 	            this.props.match.isAborted ? this.getAbortedMessage() : "",
@@ -28636,7 +28636,7 @@
 	exports.i(__webpack_require__(22), "");
 	
 	// module
-	exports.push([module.id, "\n", ""]);
+	exports.push([module.id, "* {\n  font-family: Trebuchet MS, Verdana, sans-serif;\n}\n", ""]);
 	
 	// exports
 
