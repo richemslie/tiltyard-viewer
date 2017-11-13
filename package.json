@@ -1,7 +1,7 @@
 {
-  "name": "web-experiment",
+  "name": "tiltyard-viewer",
   "version": "0.0.1",
-  "description": "An experiment. Possibly at some point an alternative Tiltyard match viewer.",
+  "description": "An alternative Tiltyard match viewer.",
   "main": "./dist/bundle.js",
   "scripts": {
     "build": "npm run clean && tsc -d && webpack",
