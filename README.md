@@ -3,6 +3,12 @@ An alternative match viewer for Tiltyard, in the form of a single-page app.
 
 Built with TypeScript and React.
 
+Development tips:
+* Install [Node.js](https://nodejs.org/en/download/) and [yarn](https://yarnpkg.com/lang/en/docs/install/) if you don't already have them.
+* From the project's root directory, run `yarn install` to install its dependencies.
+* Run `yarn build` to compile the project into the `dist/` directory. (You will need to rerun this after any changes to the source.)
+* Open the `index.html` file in the project's root directory in your browser.
+
 TODOs:
 - Deploy!
 - Match list:
