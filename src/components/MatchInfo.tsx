@@ -71,7 +71,7 @@ function getRoleIdentifier(gameMetadata: TiltyardGameRawMetadata, playerIndex: n
 }
 
 function getGoalInfo(match: TiltyardMatch, playerIndex: number): React.ReactChild {
-  if (match != undefined && match.goalValues != undefined) {
+  if (match != undefined && match.goalValues != undefined && match.goalValues.length != 0) {
     return " (" + match.goalValues[playerIndex] + ")";
   }
   return "";

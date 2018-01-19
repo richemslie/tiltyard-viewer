@@ -28,7 +28,7 @@ export class VerticalMatchList extends React.Component<VerticalMatchListProps, {
 }
 
 function getGoalInfo(matchSummary: MatchSummary, index: number) {
-  if (matchSummary.goalValues != undefined) {
+  if (matchSummary.goalValues != undefined && matchSummary.goalValues.length != 0) {
     return " (" + matchSummary.goalValues[index] + ")";
   }
   return "";

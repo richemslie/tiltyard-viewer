@@ -46,12 +46,12 @@ export class MatchSelectingDisplay extends React.Component<MatchSelectingDisplay
   }
 
   public componentDidMount(): void {
-    // The hash is the identifier for Tiltyard specifically
-    const matchListUrl = "https://database.ggp.org/query/filter,recent,90bd08a7df7b8113a45f1e537c1853c3974006b2";
+    const matchListUrl = "http://simulated.tech:8888/summary";
     fetch(matchListUrl)
       .then((response) => { return response.text(); })
       .then((body) => {
         const rawMatchesList: RawMatchesList = JSON.parse(body);
+
         const summaries: MatchSummary[] = rawMatchesList.queryMatches.map(toMatchSummary);
 
         this.setState({
@@ -85,8 +85,7 @@ export class MatchSelectingDisplay extends React.Component<MatchSelectingDisplay
       // Wait for that to load the first time
       return;
     }
-    // The hash is the identifier for Tiltyard specifically
-    const matchListUrl = "https://database.ggp.org/query/filter,recent,90bd08a7df7b8113a45f1e537c1853c3974006b2";
+    const matchListUrl = "http://simulated.tech:8888/summary";
     fetch(matchListUrl)
       .then((response) => { return response.text(); })
       .then((body) => {
@@ -103,6 +102,7 @@ export class MatchSelectingDisplay extends React.Component<MatchSelectingDisplay
 
   // Warning: Mutates newSummaries
   private mergeOldSummariesIntoNew(oldSummaries: MatchSummary[], newSummaries: MatchSummary[]): void {
+
     let alreadyAdded: Set<string> = new Set<string>(newSummaries.map((summary) => summary.matchUrl));
     oldSummaries.forEach((summary) => {
       if (!alreadyAdded.has(summary.matchUrl)) {
@@ -161,7 +161,7 @@ function toMatchSummary(rawMatch: TiltyardMatchSummary): MatchSummary {
     aborted: rawMatch.isAborted,
     gameMetaUrl: securifyUrl(rawMatch.gameMetaURL),
     goalValues: rawMatch.goalValues,
-    matchUrl: securifyUrl(rawMatch.matchURL),
+    matchUrl: rawMatch.matchURL,
     playerNames: rawMatch.playerNamesFromHost.map(transformPlayerName),
   };
 }
