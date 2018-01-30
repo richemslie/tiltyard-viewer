@@ -1,4 +1,5 @@
-import os
+''' code from mokemokechicken XXX add license '''
+
 import sys
 import time
 
@@ -48,13 +49,9 @@ def convert_move_to_gdl_move(move):
     mapping_x_cord = {x0 : x1 for x0, x1 in zip('12345678', '87654321')}
     mapping_y_cord = {x0 : x1 for x0, x1 in zip('abcdefgh', '12345678')}
 
-
     mapping_colour = dict(B='black', W='red')
     turn_move = mapping_colour[move.color]
     move_str = move.pos.lower()
-
-    #print 'turn_move', turn_move
-    #print 'move_str', move_str
 
     if move_str == "pa":
         return turn_move, 'noop'
@@ -67,7 +64,6 @@ def convert_move_to_gdl_move2(move):
     mapping_y_cord = {x0 : x1 for x0, x1 in zip('abcdefgh', '12345678')}
 
     move_str = move.lower()
-    #print 'move_str', move_str
 
     if move_str == "pa":
         return 'noop'
@@ -79,22 +75,12 @@ def convert_gdl_move_to_move(player, gdl_move):
     mapping_x_cord = {x0 : x1 for x0, x1 in zip('87654321', '12345678')}
     mapping_y_cord = {x0 : x1 for x0, x1 in zip('12345678', 'abcdefgh')}
 
-    mapping_colour = dict(black='B', red='W')
-
-    #print mapping_colour
-    #print mapping_x_cord, mapping_y_cord
-
     gdl_move_parts = gdl_move.replace("(", "").replace(")", "").split()
 
-    #print "gdl_move_parts", gdl_move_parts
     if gdl_move_parts[0] == "noop":
         return "pa"
 
-    colour = mapping_colour[player]
-    pos = "%s%s" % (mapping_y_cord[gdl_move_parts[1]], mapping_x_cord[gdl_move_parts[2]])
-    #print colour, pos
-    #return "%s%s" % (colour, pos)
-    return pos
+    return "%s%s" % (mapping_y_cord[gdl_move_parts[1]], mapping_x_cord[gdl_move_parts[2]])
 
 
 class NBoardProtocolVersion2(object):
@@ -145,7 +131,6 @@ class NBoardProtocolVersion2(object):
         """
         ggf = parse_ggf(ggf_str)
 
-        #print "BOARD size:", ggf.BO.board_type
         assert int(ggf.BO.board_type) == 8
         for i in range(8):
             start = i * 8
@@ -155,10 +140,7 @@ class NBoardProtocolVersion2(object):
         # (O is white, * is black) -> gdl (O is red, * is black)
         # gdl_color = 'black' if ggf.BO.color == '*' else 'red'
 
-        #print "MOVES"
         gdl_moves = [convert_move_to_gdl_move(m) for m in ggf.MOVES]
-
-        #print gdl_moves
 
         # set engine to initial state and apply moves
         self.engine.reset()
@@ -172,7 +154,6 @@ class NBoardProtocolVersion2(object):
         if time is omitted it is assumed to be 0.
         Required:Update the game state by making the move. No response required.
         """
-        #print type(move), evaluation, time_sec
         gdl_move = convert_move_to_gdl_move2(move)
         self.engine.apply_move(gdl_move)
 
@@ -276,13 +257,11 @@ class NBoardProtocolVersion2(object):
 
 
 class Engine(basic.LineReceiver):
-    def __init__(self, addr, puct_player):
+    def __init__(self, addr, puct_evaluator):
         self.addr = addr
-        self.puct_player = puct_player
-        self.nboard = NBoardProtocolVersion2(self)
-        self.joint_move = self.puct_evaluator.sm.get_joint_move()
-        self.basestate = self.puct_evaluator.sm.new_base_state()
+        self.puct_evaluator = puct_evaluator
 
+        self.nboard = NBoardProtocolVersion2(self)
         self.reset()
 
     def connectionMade(self):
@@ -306,10 +285,15 @@ class Engine(basic.LineReceiver):
         return "gzero"
 
     def reset(self):
-        bs = self.puct_evaluator.sm.get_initial_state()
-        self.puct_evaluator.reset()
-        self.puct_evaluator.establish_root(bs, 0)
+        # get reversi game info and initlise puct evaluator
+        game_info = lookup.by_name("reversi")
+        bs = game_info.get_sm().get_initial_state()
+
+        self.puct_evaluator.init(game_info, bs)
         self.game_depth = 0
+
+        self.joint_move = self.puct_evaluator.sm.get_joint_move()
+        self.basestate = self.puct_evaluator.sm.new_base_state()
 
     def apply_move(self, move):
         sm = self.puct_evaluator.sm
@@ -351,9 +335,6 @@ class Engine(basic.LineReceiver):
         sm.next_state(self.joint_move, self.basestate)
         self.game_depth += 1
 
-        if not sm.is_terminal():
-            self.puct_evaluator.establish_root(self.basestate, self.game_depth)
-
     def go(self):
         # root of puct_evaluator *should* be in right state
         choice = self.puct_evaluator.on_next_move(self.puct_evaluator.conf.playouts_per_iteration,
@@ -369,7 +350,6 @@ class Engine(basic.LineReceiver):
         pass
 
 
-
 class ServerFactory(protocol.Factory):
     def __init__(self, pe):
         self.puct_evaluator = pe
@@ -377,6 +357,8 @@ class ServerFactory(protocol.Factory):
     def buildProtocol(self, addr):
         return Engine(addr, self.puct_evaluator)
 
+
+###############################################################################
 
 def main(args):
     from ggplib.util.init import setup_once
@@ -394,18 +376,10 @@ def main(args):
         generation = "v7_42"
 
     conf = templates.puct_config_template(generation, config_name)
-    conf.verbose=True
+    conf.verbose = True
     conf.generation = generation
 
     puct_evaluator = PUCTEvaluator(conf)
-
-    # get reversi game info and initlise puct evaluator
-    game_info = lookup.by_name("reversi")
-
-    bs = game_info.sm.get_initial_state()
-    print game_info.sm.basestate_to_str(bs)
-
-    puct_evaluator.init(game_info)
 
     factory = ServerFactory(puct_evaluator)
     reactor.listenTCP(port, factory)
