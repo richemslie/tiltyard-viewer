@@ -122,7 +122,7 @@ class NBoardProtocolVersion2(object):
         Optional: Set midgame depth to {maxDepth}. Endgame depths are at the engine author's discretion.
         :param depth:
         """
-        self.engine.set_depth(depth)
+        self.engine.set_depth(int(depth))
 
     def set_game(self, ggf_str):
         """Tell the engine that all further commands relate to the position at the end of the given game, in GGF format.
@@ -347,7 +347,8 @@ class Engine(basic.LineReceiver):
         return colour, move_str
 
     def set_depth(self, depth):
-        pass
+        self.puct_evaluator.conf.playouts_per_iteration = depth * 100
+        log.warning("setting playouts to %s" % self.puct_evaluator.conf.playouts_per_iteration)
 
 
 class ServerFactory(protocol.Factory):
