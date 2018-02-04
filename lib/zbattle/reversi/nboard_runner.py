@@ -11,8 +11,9 @@ from twisted.internet import reactor
 from ggplib.db import lookup
 from ggplib.util import log
 
-from ggpzero.defs import templates
-from ggpzero.player.puctplayer import PUCTEvaluator
+
+from ggpzero.defs import confs
+from ggpzero.player.cpuctplayer import CppPUCTPlayer
 
 
 import re
@@ -256,12 +257,25 @@ class NBoardProtocolVersion2(object):
         self.engine.send("status %s" % (status))
 
 
+class Match:
+    match_id = "nboard_runner_xx1"
+
+    def __init__(self, game_info, basestate):
+        self.game_info = game_info
+        self.basestate = basestate
+
+    def get_current_state(self):
+        return self.basestate
+
+
 class Engine(basic.LineReceiver):
-    def __init__(self, addr, puct_evaluator):
+    def __init__(self, addr, puct_player):
         self.addr = addr
-        self.puct_evaluator = puct_evaluator
+        self.puct_player = puct_player
 
         self.nboard = NBoardProtocolVersion2(self)
+        self.sm = None
+        self.depth = 1
         self.reset()
 
     def connectionMade(self):
@@ -281,85 +295,130 @@ class Engine(basic.LineReceiver):
         self.sendLine(line)
 
     def get_name(self):
-        # XXX config, puctevaluator
-        return "gzero"
+        return "%s_%d" % (self.puct_player.conf.name, self.depth)
 
     def reset(self):
-        # get reversi game info and initlise puct evaluator
+        # get reversi game info and initialise puct player
         game_info = lookup.by_name("reversi")
-        bs = game_info.get_sm().get_initial_state()
+        if self.sm is None:
+            sm = game_info.get_sm()
+            self.joint_move = sm.get_joint_move()
+            self.basestate = sm.new_base_state()
+            self.basestate.assign(sm.get_initial_state())
 
-        self.puct_evaluator.init(game_info, bs)
-        self.game_depth = 0
+            self.puct_player.match = Match(game_info, self.basestate)
+            self.puct_player.on_meta_gaming(-1)
+            self.sm = self.puct_player.sm
+            self.game_depth = 0
 
-        self.joint_move = self.puct_evaluator.sm.get_joint_move()
-        self.basestate = self.puct_evaluator.sm.new_base_state()
+        else:
+            self.basestate.assign(self.sm.get_initial_state())
+            self.puct_player.on_meta_gaming(-1)
+
+    def determine_legal_role_index(self):
+        if (self.sm.get_legal_state(0).get_count() == 1 and
+            self.sm.get_legal_state(0).get_legal(0) == self.puct_player.role0_noop_legal):
+            lead_role_index = 1
+            other_role_index = 0
+
+        else:
+            assert (self.sm.get_legal_state(1).get_count() == 1 and
+                    self.sm.get_legal_state(1).get_legal(0) == self.puct_player.role1_noop_legal)
+            lead_role_index = 0
+            other_role_index = 1
+
+        return lead_role_index, other_role_index
 
     def apply_move(self, move):
-        sm = self.puct_evaluator.sm
-        root = self.puct_evaluator.root
-
         log.debug("apply_move: %s" % move)
 
-        assert self.puct_evaluator.root is not None
-
-        # update the sm from root
-        self.basestate.from_list(root.state)
-        sm.update_bases(self.basestate)
-
-        other_role_index = 0 if root.lead_role_index == 1 else 1
+        # current state
+        self.sm.update_bases(self.basestate)
+        lead_role_index, other_role_index = self.determine_legal_role_index()
 
         # noop:
-        ls = self.puct_evaluator.sm.get_legal_state(other_role_index)
+        ls = self.sm.get_legal_state(other_role_index)
         assert ls.get_count() == 1
         self.joint_move.set(other_role_index, ls.get_legal(0))
 
         # find our move
-        ls = self.puct_evaluator.sm.get_legal_state(root.lead_role_index)
+        ls = self.sm.get_legal_state(lead_role_index)
         choices = [ls.get_legal(ii) for ii in range(ls.get_count())]
 
         matched = False
         for choice in choices:
-            choice_move = self.puct_evaluator.sm.legal_to_move(root.lead_role_index, choice)
+            choice_move = self.sm.legal_to_move(lead_role_index, choice)
             if choice_move == move:
-                self.joint_move.set(root.lead_role_index, choice)
+                self.joint_move.set(lead_role_index, choice)
                 matched = True
                 break
 
         assert matched
 
-        self.puct_evaluator.on_apply_move(self.joint_move)
+        self.puct_player.on_apply_move(self.joint_move)
 
         # move the statemachine forward
-        sm.update_bases(self.basestate)
-        sm.next_state(self.joint_move, self.basestate)
+        self.sm.update_bases(self.basestate)
+        self.sm.next_state(self.joint_move, self.basestate)
+
         self.game_depth += 1
 
     def go(self):
-        # root of puct_evaluator *should* be in right state
-        choice = self.puct_evaluator.on_next_move(self.puct_evaluator.conf.playouts_per_iteration,
-                                                  time.time() + 60)
-        if self.puct_evaluator.conf.verbose:
-            self.puct_evaluator.debug_output(choice)
+        # current state
+        self.sm.update_bases(self.basestate)
+        lead_role_index, _ = self.determine_legal_role_index()
+        self.puct_player.match.our_role_index = lead_role_index
 
-        colour = "black" if self.puct_evaluator.root.lead_role_index == 0 else "red"
-        move_str = choice.move
+        # the match should be in the right state
+        choice = self.puct_player.on_next_move(time.time() + 60)
+
+        colour = "black" if lead_role_index == 0 else "red"
+        move_str = self.sm.legal_to_move(lead_role_index, choice)
         return colour, move_str
 
     def set_depth(self, depth):
-        self.puct_evaluator.conf.playouts_per_iteration = depth * 100
-        log.warning("setting playouts to %s" % self.puct_evaluator.conf.playouts_per_iteration)
+        self.depth = depth
+        conf = self.puct_player.conf
+        conf.playouts_per_iteration = depth * 100
+        log.warning("setting playouts to %s" % conf.playouts_per_iteration)
 
 
 class ServerFactory(protocol.Factory):
-    def __init__(self, pe):
-        self.puct_evaluator = pe
+    def __init__(self, pp):
+        self.puct_player = pp
 
     def buildProtocol(self, addr):
-        return Engine(addr, self.puct_evaluator)
+        return Engine(addr, self.puct_player)
 
 
 ###############################################################################
+
+compete = confs.PUCTPlayerConfig(name="gzero",
+
+                                 choose="choose_temperature",
+
+                                 puct_constant_before=3.0,
+                                 puct_constant_after=0.75,
+                                 puct_before_expansions=4,
+                                 puct_before_root_expansions=5,
+
+                                 temperature=1.0,
+                                 depth_temperature_max=5.0,
+                                 depth_temperature_start=0,
+                                 depth_temperature_increment=1.5,
+                                 depth_temperature_stop=16,
+                                 random_scale=0.6,
+
+                                 playouts_per_iteration=100,
+                                 playouts_per_iteration_noop=0,
+
+                                 root_expansions_preset_visits=-1,
+                                 dirichlet_noise_alpha=-1,
+                                 dirichlet_noise_pct=0.25,
+
+                                 verbose=True,
+                                 max_dump_depth=2)
+
 
 def main(args):
     from ggplib.util.init import setup_once
@@ -369,20 +428,12 @@ def main(args):
     init()
 
     port = int(args[0])
-    config_name = args[1]
+    generation = args[1]
 
-    if len(args) > 2:
-        generation = args[2]
-    else:
-        generation = "v7_42"
+    compete.generation = generation
+    puct_player = CppPUCTPlayer(compete)
 
-    conf = templates.puct_config_template(generation, config_name)
-    conf.verbose = True
-    conf.generation = generation
-
-    puct_evaluator = PUCTEvaluator(conf)
-
-    factory = ServerFactory(puct_evaluator)
+    factory = ServerFactory(puct_player)
     reactor.listenTCP(port, factory)
     reactor.run()
 
