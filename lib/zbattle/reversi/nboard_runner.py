@@ -13,7 +13,7 @@ from ggplib.util import log
 
 
 from ggpzero.defs import confs
-from ggpzero.player.cpuctplayer import CppPUCTPlayer
+from ggpzero.player.puctplayer import PUCTPlayer
 
 
 import re
@@ -261,6 +261,7 @@ class Match:
     match_id = "nboard_runner_xx1"
 
     def __init__(self, game_info, basestate):
+        self.game_depth = 0
         self.game_info = game_info
         self.basestate = basestate
 
@@ -380,6 +381,8 @@ class Engine(basic.LineReceiver):
         self.depth = depth
         conf = self.puct_player.conf
         conf.playouts_per_iteration = depth * 100
+        if conf.playouts_per_iteration == 0:
+            conf.playouts_per_iteration = 1
         log.warning("setting playouts to %s" % conf.playouts_per_iteration)
 
 
@@ -396,24 +399,25 @@ class ServerFactory(protocol.Factory):
 compete = confs.PUCTPlayerConfig(name="gzero",
 
                                  choose="choose_temperature",
+                                 #choose="choose_top_visits",
 
                                  puct_constant_before=3.0,
                                  puct_constant_after=0.75,
-                                 puct_before_expansions=4,
-                                 puct_before_root_expansions=5,
+                                 puct_before_expansions=3,
+                                 puct_before_root_expansions=4,
 
                                  temperature=1.0,
-                                 depth_temperature_max=5.0,
-                                 depth_temperature_start=0,
-                                 depth_temperature_increment=1.5,
-                                 depth_temperature_stop=16,
-                                 random_scale=0.6,
+                                 depth_temperature_max=10.0,
+                                 depth_temperature_start=1,
+                                 depth_temperature_increment=0.5,
+                                 depth_temperature_stop=4,
+                                 random_scale=1.0,
 
                                  playouts_per_iteration=100,
                                  playouts_per_iteration_noop=0,
 
                                  root_expansions_preset_visits=-1,
-                                 dirichlet_noise_alpha=-1,
+                                 dirichlet_noise_alpha=0.3,
                                  dirichlet_noise_pct=0.25,
 
                                  verbose=True,
@@ -431,7 +435,8 @@ def main(args):
     generation = args[1]
 
     compete.generation = generation
-    puct_player = CppPUCTPlayer(compete)
+    puct_player = PUCTPlayer(compete)
+    puct_player.tiered = False
 
     factory = ServerFactory(puct_player)
     reactor.listenTCP(port, factory)
