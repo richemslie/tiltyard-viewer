@@ -32,7 +32,7 @@ from ggpzero.tournament import confs
 
 
 def matches_path(game):
-    return os.path.join(os.environ["GGPZERO_PATH"], "data", "tournament", game)
+    return os.path.join("/home/rxe/tournament", game)
 
 
 def augment_header(headers):
@@ -57,6 +57,7 @@ class GetMatchInfo(Resource):
             obj = attrutil.json_to_attr(open(self.match_path).read())
             augment_header(request.responseHeaders)
             return json.dumps(attr.asdict(obj))
+
         except Exception as exc:
             log.debug("ERROR %s" % exc)
             return ""
@@ -79,9 +80,11 @@ class SummaryForGame(Resource):
         try:
             augment_header(request.responseHeaders)
             return json.dumps(attr.asdict(self.obj))
+
         except Exception as exc:
             log.debug("ERROR %s" % exc)
             return ""
+
 
 class WebServer(Resource):
     isLeaf = False
@@ -91,24 +94,22 @@ class WebServer(Resource):
         self.path_to_viewer = path_to_viewer
 
     def getChild(self, game, request):
-        log.debug("Got GET request from: %s" % request.getClientIP())
-        log.debug("HEADERS : %s" % pprint.pformat(request.getAllHeaders()))
-
         if game == 'summary':
             return self
 
-        games = "breakthrough cittaceot checkers connectFour escortLatch hex reversi "
+        games = "breakthrough cittaceot checkers connectFour escortLatch hex reversi speedChess"
         if game in games.split():
             return SummaryForGame(game)
 
+        log.debug("Got GET request from: %s/%s" % (request.getClientIP(), request))
+        log.debug("HEADERS : %s" % pprint.pformat(request.getAllHeaders()))
         return File(self.path_to_viewer)
 
     def render_GET(self, request):
         summary_path = matches_path("summary.json")
-        print "summary_path %s" % summary_path
-
         self.obj = attrutil.json_to_attr(open(summary_path).read())
-
+        x = self.obj
+        x.queryMatches = x.queryMatches[:20]
         augment_header(request.responseHeaders)
         return json.dumps(attr.asdict(self.obj))
 
@@ -122,7 +123,7 @@ class WebServer(Resource):
 def main(args):
     port = int(args[0])
     path_to_viewer = args[1]
-    interface.initialise_k273(1, log_name_base="viewer")
+    interface.initialise_k273(1, log_name_base="web")
     log.initialise()
 
     root = WebServer(path_to_viewer)

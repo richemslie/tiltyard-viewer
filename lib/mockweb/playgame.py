@@ -38,6 +38,7 @@ games_to_url = {
     "escortLatch" : "http://games.ggp.org/base/games/escortLatch/v0/",
     "hex" : "http://games.ggp.org/base/games/hex/v0/",
     "reversi" : "http://games.ggp.org/base/games/reversi/v0/",
+    "speedChess" : "http://games.ggp.org/base/games/speedChess/v1/",
 }
 
 
@@ -101,11 +102,11 @@ def set_goals(match_info, goal_values):
 
 
 def matches_path(game):
-    return os.path.join(os.environ["GGPZERO_PATH"], "data", "tournament", game)
+    return os.path.join("/home/rxe/tournament", game)
 
 
 def summary_path():
-    return os.path.join(os.environ["GGPZERO_PATH"], "data", "tournament", "summary.json")
+    return os.path.join("/home/rxe/tournament", "summary.json")
 
 
 def update_summaries(game, match_info):
@@ -115,7 +116,7 @@ def update_summaries(game, match_info):
               "playClock tournamentNameFromHost startClock matchId gameMetaURL "
               "isAborted isCompleted goalValues".split()):
         setattr(summary, k, getattr(match_info, k))
-    summary.matchURL = "http://localhost:8888/%s/%s" % (game, match_info.randomToken)
+    summary.matchURL = "http://simulated.tech:8800/%s/%s" % (game, match_info.randomToken)
 
     try:
         the_summaries = attrutil.json_to_attr(open(summary_path()).read())
@@ -158,7 +159,7 @@ def update_match_info(game, match_info):
 def do_game(game, gen, players, meta_time, move_time):
     # ensure we have a network
 
-    gm = GameMaster(get_gdl_for_game(game), verbose=True)
+    gm = GameMaster(get_gdl_for_game(game), verbose=False)
     info = lookup.by_name(game)
 
     for player, role in zip(players, gm.sm.get_roles()):
@@ -195,20 +196,27 @@ def do_game(game, gen, players, meta_time, move_time):
 def main():
     setup()
 
+    simplemcts = get.get_player("simplemcts")
+    simplemcts.skip_single_moves = True
+
+    pymcs = get.get_player("pymcs")
+    pymcs.skip_single_moves = True
+    pymcs.max_run_time = 0.5
+
     mapping = {
         'breakthrough' : ["v5_%s" % s for s in [80, 92]],
         'cittaceot' : ["v8_%s" % s for s in [20, 30]],
         'checkers' : ["v7_%s" % s for s in [10, 16]],
         'connectFour' : ["v7_%s" % s for s in [25, 38]],
-        'escortLatch' : ["v7_%s" % s for s in [5, 10]],
+        'escortLatch' : ["v7_%s" % s for s in [5]],
         'hex' : ["v7_%s" % s for s in [15, 20]],
-        'reversi' : ["v7_%s" % s for s in [25, 39]]
+        'reversi' : ["v7_%s" % s for s in [30, 40, 50]],
+        # 'speedChess' : ["v9_%s" % s for s in [26]]
     }
 
-    simplemcts = get.get_player("simplemcts")
     players = {}
     for game in mapping:
-        players.setdefault(game, [simplemcts])
+        players.setdefault(game, [pymcs, simplemcts])
 
         path_to_matches = matches_path(game)
         if not os.path.exists(path_to_matches):
@@ -219,8 +227,8 @@ def main():
             conf = templates.puct_config_template(gen, "compete")
             players[game].append(CppPUCTPlayer(conf=conf))
 
-    meta_time = 30
-    move_time = 10
+    meta_time = 20
+    move_time = 5
     while True:
         game = random.choice(mapping.keys())
         players_available = players[game]
@@ -228,6 +236,8 @@ def main():
 
         do_game(game, gen, players_available[:2], meta_time, move_time)
 
+        # wait 5 seconds between games
+        time.sleep(5)
 
 ###############################################################################
 

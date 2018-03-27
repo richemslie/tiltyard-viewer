@@ -178,28 +178,28 @@ export interface RawMatchesList {
 }
 
 export interface TiltyardMatchSummary {
-  randomToken: string;
+  //randomToken: string;
   playerNamesFromHost: string[];
   hasErrors: boolean;
-  lastUpdated: number;
-  moveCount: number;
-  scrambled: boolean;
-  allErrors: boolean;
-  isPlayerHuman: boolean[];
+  //lastUpdated: number;
+  //moveCount: number;
+  //scrambled: boolean;
+  //allErrors: boolean;
+  //isPlayerHuman: boolean[];
   matchURL: string;
-  startTime: number;
-  playClock: number;
-  tournamentNameFromHost: string;
+  //startTime: number;
+  //playClock: number;
+  //tournamentNameFromHost: string;
   matchLength: number;
-  allErrorsForPlayer: boolean[];
-  hashedMatchHostPK: string;
-  hasErrorsForPlayer: boolean[];
-  startClock: number;
+  //allErrorsForPlayer: boolean[];
+  //hashedMatchHostPK: string;
+  //hasErrorsForPlayer: boolean[];
+  //startClock: number;
   matchId: string;
-  matchRoles: number;
+  //matchRoles: number;
   gameMetaURL: string;
   isAborted: boolean;
   isCompleted: boolean;
-  allErrorsForSomePlayer: boolean;
+  //allErrorsForSomePlayer: boolean;
   goalValues?: number[];
 }
