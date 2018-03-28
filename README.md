@@ -1,11 +1,10 @@
-# tiltyard-viewer
-An alternative match viewer for Tiltyard, in the form of a single-page app.
-
-
 # use with gzero
 Modified fork to generate/analyise games with gzero, by Richard Emslie.  Not currently in use, and has code
 rotted over time.
 
+
+# tiltyard-viewer
+An alternative match viewer for Tiltyard, in the form of a single-page app.
 
 
 Built with TypeScript and React.
